@@ -36,7 +36,7 @@ namespace Microex.AngularSpa.UEditor.Handlers
             }
         }
 
-        public static UEditorConfig Config { get; set; }
+        public static UEditorJsonConfig Config { get; set; }
         public static string WebRootPath { get; set; }
     }
 }

@@ -25,19 +25,20 @@ namespace Microex.AngularSpa.UEditor
         public UEditorMiddleware(IHostingEnvironment env, string configPath)
         {
             _env = env;
+            UEditorJsonConfig config = null;
             if (configPath.IsNullOrEmpty() && _resourceManager == null)
             {
                 _resourceManager = new ResourceManager("Microex.AngularSpa.UEditor", typeof(Microex.AngularSpa.UEditor.UEditorMiddleware).GetTypeInfo().Assembly);
-                this._config = _resourceManager.GetString("DefaultConfig.Json").ToObject<UEditorConfig>();
+                config = _resourceManager.GetString("DefaultConfig.Json").ToObject<UEditorJsonConfig>();
             }
             else
             {
-                this._config = File.ReadAllText(Path.Combine(_env.WebRootPath, configPath)).ToObject<UEditorConfig>();
+                config = File.ReadAllText(Path.Combine(_env.WebRootPath, configPath)).ToObject<UEditorJsonConfig>();
                 
             }
 
             Handler.WebRootPath = _env.WebRootPath;
-            Handler.Config = _config;
+            Handler.Config = config;
         }
 
         public Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -54,10 +55,10 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new UploadHandler(context, new UploadConfig()
                         {
-                            AllowExtensions = _config.ImageAllowFiles,
-                            PathFormat = _config.ImagePathFormat,
-                            SizeLimit = _config.ImageMaxSize,
-                            UploadFieldName = _config.ImageFieldName
+                            AllowExtensions = _config.JsonConfig.ImageAllowFiles,
+                            PathFormat = _config.JsonConfig.ImagePathFormat,
+                            SizeLimit = _config.JsonConfig.ImageMaxSize,
+                            UploadFieldName = _config.JsonConfig.ImageFieldName
                         }).Process();
                         break;
                     }
@@ -66,9 +67,9 @@ namespace Microex.AngularSpa.UEditor
                         new UploadHandler(context, new UploadConfig()
                         {
                             AllowExtensions = new string[] { ".png" },
-                            PathFormat = _config.ScrawlPathFormat,
-                            SizeLimit = _config.ScrawlMaxSize,
-                            UploadFieldName = _config.ScrawlFieldName,
+                            PathFormat = _config.JsonConfig.ScrawlPathFormat,
+                            SizeLimit = _config.JsonConfig.ScrawlMaxSize,
+                            UploadFieldName = _config.JsonConfig.ScrawlFieldName,
                             Base64 = true,
                             Base64Filename = "scrawl.png"
                         }).Process();
@@ -78,10 +79,10 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new UploadHandler(context, new UploadConfig()
                         {
-                            AllowExtensions = _config.VideoAllowFiles,
-                            PathFormat = _config.VideoPathFormat,
-                            SizeLimit = _config.VideoMaxSize,
-                            UploadFieldName = _config.VideoFieldName
+                            AllowExtensions = _config.JsonConfig.VideoAllowFiles,
+                            PathFormat = _config.JsonConfig.VideoPathFormat,
+                            SizeLimit = _config.JsonConfig.VideoMaxSize,
+                            UploadFieldName = _config.JsonConfig.VideoFieldName
                         }).Process();
                         break;
                     }
@@ -89,10 +90,10 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new UploadHandler(context, new UploadConfig()
                         {
-                            AllowExtensions = _config.FileAllowFiles,
-                            PathFormat = _config.FilePathFormat,
-                            SizeLimit = _config.FileMaxSize,
-                            UploadFieldName = _config.FileFieldName
+                            AllowExtensions = _config.JsonConfig.FileAllowFiles,
+                            PathFormat = _config.JsonConfig.FilePathFormat,
+                            SizeLimit = _config.JsonConfig.FileMaxSize,
+                            UploadFieldName = _config.JsonConfig.FileFieldName
                         }).Process();
                         break;
                     }
@@ -100,8 +101,8 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new ListFileManager(
                                 context,
-                                _config.ImageManagerListPath,
-                                _config.ImageManagerAllowFiles)
+                                _config.JsonConfig.ImageManagerListPath,
+                                _config.JsonConfig.ImageManagerAllowFiles)
                             .Process();
                         break;
                     }
@@ -109,8 +110,8 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new ListFileManager(
                                 context,
-                                _config.FileManagerListPath,
-                                _config.FileManagerAllowFiles)
+                                _config.JsonConfig.FileManagerListPath,
+                                _config.JsonConfig.FileManagerAllowFiles)
                             .Process();
                         break;
                     }
