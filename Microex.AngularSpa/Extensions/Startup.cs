@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microex.AngularSpa.UEditor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,19 @@ namespace Microex.AngularSpa.Extensions
 {
     public static class Startup
     {
+        /// <summary>
+        /// add ueditor handler to the pipeline
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="ueditorEndpoint">endpoint of ueditor middleware</param>
+        /// <param name="configPath">path relative to wwwroot</param>
+        /// <returns></returns>
+        public static IApplicationBuilder AddUEditor(this IApplicationBuilder builder,string ueditorEndpoint = "ueditor",string configPath = null)
+        {
+            builder.Map(ueditorEndpoint,(x)=>x.UseMiddleware<UEditorMiddleware>(configPath));
+            return builder;
+        }
+
         /// <summary>
         /// Config angular4 spa pipe line in one line of code, default serve path is \wwwroot\index.html
         /// </summary>
