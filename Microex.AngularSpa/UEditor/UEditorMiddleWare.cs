@@ -55,10 +55,10 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new UploadHandler(context, new UploadConfig()
                         {
-                            AllowExtensions = _config.JsonConfig.ImageAllowFiles,
-                            PathFormat = _config.JsonConfig.ImagePathFormat,
-                            SizeLimit = _config.JsonConfig.ImageMaxSize,
-                            UploadFieldName = _config.JsonConfig.ImageFieldName
+                            AllowExtensions = _config.ImageAllowFiles,
+                            PathFormat = _config.ImagePathFormat,
+                            SizeLimit = _config.ImageMaxSize,
+                            UploadFieldName = _config.ImageFieldName
                         }).Process();
                         break;
                     }
@@ -67,9 +67,9 @@ namespace Microex.AngularSpa.UEditor
                         new UploadHandler(context, new UploadConfig()
                         {
                             AllowExtensions = new string[] { ".png" },
-                            PathFormat = _config.JsonConfig.ScrawlPathFormat,
-                            SizeLimit = _config.JsonConfig.ScrawlMaxSize,
-                            UploadFieldName = _config.JsonConfig.ScrawlFieldName,
+                            PathFormat = _config.ScrawlPathFormat,
+                            SizeLimit = _config.ScrawlMaxSize,
+                            UploadFieldName = _config.ScrawlFieldName,
                             Base64 = true,
                             Base64Filename = "scrawl.png"
                         }).Process();
@@ -79,10 +79,10 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new UploadHandler(context, new UploadConfig()
                         {
-                            AllowExtensions = _config.JsonConfig.VideoAllowFiles,
-                            PathFormat = _config.JsonConfig.VideoPathFormat,
-                            SizeLimit = _config.JsonConfig.VideoMaxSize,
-                            UploadFieldName = _config.JsonConfig.VideoFieldName
+                            AllowExtensions = _config.VideoAllowFiles,
+                            PathFormat = _config.VideoPathFormat,
+                            SizeLimit = _config.VideoMaxSize,
+                            UploadFieldName = _config.VideoFieldName
                         }).Process();
                         break;
                     }
@@ -90,10 +90,10 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new UploadHandler(context, new UploadConfig()
                         {
-                            AllowExtensions = _config.JsonConfig.FileAllowFiles,
-                            PathFormat = _config.JsonConfig.FilePathFormat,
-                            SizeLimit = _config.JsonConfig.FileMaxSize,
-                            UploadFieldName = _config.JsonConfig.FileFieldName
+                            AllowExtensions = _config.FileAllowFiles,
+                            PathFormat = _config.FilePathFormat,
+                            SizeLimit = _config.FileMaxSize,
+                            UploadFieldName = _config.FileFieldName
                         }).Process();
                         break;
                     }
@@ -101,8 +101,8 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new ListFileManager(
                                 context,
-                                _config.JsonConfig.ImageManagerListPath,
-                                _config.JsonConfig.ImageManagerAllowFiles)
+                                _config.ImageManagerListPath,
+                                _config.ImageManagerAllowFiles)
                             .Process();
                         break;
                     }
@@ -110,8 +110,8 @@ namespace Microex.AngularSpa.UEditor
                     {
                         new ListFileManager(
                                 context,
-                                _config.JsonConfig.FileManagerListPath,
-                                _config.JsonConfig.FileManagerAllowFiles)
+                                _config.FileManagerListPath,
+                                _config.FileManagerAllowFiles)
                             .Process();
                         break;
                     }
