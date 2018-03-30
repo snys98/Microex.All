@@ -5,25 +5,63 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using IdentityServer4.Extensions;
+using Microex.AngularSpa.AliyunOss;
+using Microex.AngularSpa.AliyunSls;
 using Microex.AngularSpa.UEditor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microex.AngularSpa.Extensions
 {
     public static class Startup
     {
         /// <summary>
-        /// add ueditor handler to the pipeline
+        /// add microex middlewares to the pipe line
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="ueditorEndpoint">endpoint of ueditor middleware</param>
-        /// <param name="configPath">path relative to wwwroot</param>
+        /// <param name="optionsAction"></param>
         /// <returns></returns>
-        public static IApplicationBuilder AddUEditor(this IApplicationBuilder builder,string ueditorEndpoint = "ueditor",string configPath = null)
+        public static IApplicationBuilder AddMicroexAll(this IApplicationBuilder builder, Action<MicroexOptions> optionsAction)
         {
-            builder.Map(ueditorEndpoint,(x)=>x.UseMiddleware<UEditorMiddleware>(configPath));
+            var options = MicroexOptions.Instance;
+            optionsAction.Invoke(options);
+            if (options.AliyunOssOptions != null)
+            {
+                var ossOptions = options.AliyunOssOptions;
+                builder.Map(ossOptions.LocalEndPoint, (x) =>
+                {
+                    x.UseMiddleware<AliyunOssFileUploadMiddleware>(ossOptions);
+                });
+            }
+            if (options.UEditorOptions != null)
+            {
+                var ueditorOptions = options.UEditorOptions;
+                builder.Map(ueditorOptions.EndPoint, (x) =>
+                {
+                    x.UseMiddleware<UEditorMiddleware>(ueditorOptions);
+                });
+            }
+            return builder;
+        }
+
+        /// <summary>
+        /// add microex middlewares to the pipe line
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="optionsAction"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddMicroexAll(this IServiceCollection builder, Action<MicroexOptions> optionsAction)
+        {
+            var options = MicroexOptions.Instance;
+            optionsAction.Invoke(options);
+            if (options.AliyunSlsOptions != null)
+            {
+                var slsOptions = options.AliyunSlsOptions;
+                builder.AddLogging((loggingBuilder) => { loggingBuilder.AddProvider(new AliyunSlsLoggingProvider(options.AliyunSlsOptions,slsOptions.MinLevel)); });
+            }
             return builder;
         }
 
