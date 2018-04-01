@@ -36,18 +36,20 @@ namespace Microex.AngularSpa.AliyunSls
             logsRequest.Project = _project;
             logsRequest.Topic = _catagory;
             logsRequest.Logstore = _logstore;
-            logsRequest.LogItems = new List<LogItem>();
-            logsRequest.LogItems.Add(new LogItem()
+            logsRequest.LogItems = new List<LogItem>
             {
-                Contents = new List<LogContent>()
+                new LogItem()
                 {
-                    new LogContent()
+                    Contents = new List<LogContent>()
                     {
-                        Key = eventId.Name??"无",
-                        Value = new {state,exception}.ToJson(true)
+                        new LogContent()
+                        {
+                            Key = eventId.ToJson(true),
+                            Value = new {state, exception}.ToJson(true)
+                        }
                     }
                 }
-            });
+            };
             PutLogsResponse putLogRespError = client.PutLogs(logsRequest);
         }
 
