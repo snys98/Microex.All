@@ -10,7 +10,9 @@ using Microex.AngularSpa.AliyunOss;
 using Microex.AngularSpa.AliyunSls;
 using Microex.AngularSpa.UEditor;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -18,30 +20,58 @@ namespace Microex.AngularSpa.Extensions
 {
     public static class Startup
     {
+        public static IWebHostBuilder UseMicroexHostConfig(this IWebHostBuilder builder)
+        {
+            return builder.CaptureStartupErrors(true);
+        }
+
+        public static IWebHost MigrateDbContext<TContext>(this IWebHost host, Action<TContext, IServiceProvider> seedAction) where TContext : DbContext
+        {
+            using (var scope = host.Services.CreateScope())
+            {//只在本区间内有效
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<TContext>>();
+                var context = services.GetService<TContext>();
+
+                try
+                {
+                    context.Database.Migrate();
+                    seedAction(context, services);
+
+                    logger.LogInformation($"执行DBContext {typeof(TContext).Name} seed执行成功");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"执行DBContext {typeof(TContext).Name} seed方法失败");
+                }
+            }
+
+            return host;
+        }
+
         /// <summary>
         /// add microex middlewares to the pipe line
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="optionsAction"></param>
         /// <returns></returns>
-        public static IApplicationBuilder AddMicroexAll(this IApplicationBuilder builder, Action<MicroexOptions> optionsAction)
+        public static IApplicationBuilder AddMicroexAll(this IApplicationBuilder builder)
         {
             var options = MicroexOptions.Instance;
-            optionsAction.Invoke(options);
             if (options.AliyunOssOptions != null)
             {
                 var ossOptions = options.AliyunOssOptions;
-                builder.Map(ossOptions.LocalEndPoint, (x) =>
+                builder.Map($@"/{ossOptions.LocalEndPoint.TrimStart('/')}", (x) =>
                 {
-                    x.UseMiddleware<AliyunOssFileUploadMiddleware>(ossOptions);
+                    x.UseMiddleware<AliyunOssFileUploadMiddleware>();
                 });
             }
             if (options.UEditorOptions != null)
             {
                 var ueditorOptions = options.UEditorOptions;
-                builder.Map(ueditorOptions.EndPoint, (x) =>
+                builder.Map($@"/{ueditorOptions.EndPoint.TrimStart('/')}", (x) =>
                 {
-                    x.UseMiddleware<UEditorMiddleware>(ueditorOptions);
+                    x.UseMiddleware<UEditorMiddleware>();
                 });
             }
             return builder;
@@ -57,6 +87,9 @@ namespace Microex.AngularSpa.Extensions
         {
             var options = MicroexOptions.Instance;
             optionsAction.Invoke(options);
+            builder.AddSingleton<MicroexOptions>((provider => options));
+            builder.AddSingleton<AliyunOssClient>((provider => new AliyunOssClient(options.AliyunOssOptions)));
+            builder.AddSingleton<UEditorOptions>((provider => options.UEditorOptions));
             if (options.AliyunSlsOptions != null)
             {
                 var slsOptions = options.AliyunSlsOptions;

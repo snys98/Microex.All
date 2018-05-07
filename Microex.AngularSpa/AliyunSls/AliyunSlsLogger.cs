@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Aliyun.Api.LOG;
-using Aliyun.Api.LOG.Data;
-using Aliyun.Api.LOG.Request;
-using Aliyun.Api.LOG.Response;
-using Aliyun.Api.SLS.Response;
+using Aliyun.LOG;
+using Aliyun.LOG.Common.Utilities;
+using Aliyun.LOG.Data;
+using Aliyun.LOG.Request;
+using Aliyun.LOG.Response;
 using Microex.AngularSpa.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -28,29 +28,38 @@ namespace Microex.AngularSpa.AliyunSls
         }
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            LogClient client = new LogClient(_endpoint, _accesskeyId, _accessKey);
-            //init http connection timeout
-            client.ConnectionTimeout = client.ReadWriteTimeout = 10000;
-            //put logs
-            PutLogsRequest logsRequest = new PutLogsRequest();
-            logsRequest.Project = _project;
-            logsRequest.Topic = _catagory;
-            logsRequest.Logstore = _logstore;
-            logsRequest.LogItems = new List<LogItem>
+            try
             {
-                new LogItem()
+                LogClient client = new LogClient(_endpoint, _accesskeyId, _accessKey);
+                //init http connection timeout
+                client.ConnectionTimeout = client.ReadWriteTimeout = 10000;
+                //put logs
+                PutLogsRequest logsRequest = new PutLogsRequest();
+                logsRequest.Project = _project;
+                logsRequest.Topic = _catagory;
+                logsRequest.Logstore = _logstore;
+                logsRequest.LogItems = new List<LogItem>
                 {
-                    Contents = new List<LogContent>()
+                    new LogItem()
                     {
-                        new LogContent()
+                        Time = DateUtils.TimeSpan(),
+                        Contents = new List<LogContent>()
                         {
-                            Key = eventId.ToJson(true),
-                            Value = new {state, exception}.ToJson(true)
+                            new LogContent()
+                            {
+                                Key = eventId.ToJson(true),
+                                Value = new {state, exception}.ToJson(true)
+                            }
                         }
                     }
-                }
-            };
-            PutLogsResponse putLogRespError = client.PutLogs(logsRequest);
+                };
+                PutLogsResponse putLogRespError = client.PutLogs(logsRequest);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -60,7 +69,7 @@ namespace Microex.AngularSpa.AliyunSls
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public static void Config(LogLevel minLevel, string remoteEndPoint, string accessKeyId, string accessKeySecret, string project, string logStore)
@@ -70,6 +79,7 @@ namespace Microex.AngularSpa.AliyunSls
             _accessKey = accessKeySecret;
             _project = project;
             _logstore = logStore;
+            _minLevel = minLevel;
         }
     }
 }
