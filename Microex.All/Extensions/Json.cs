@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Microex.AngularSpa.Extensions
+namespace Microex.All.Extensions
 {
     public static class Json
     {
@@ -24,7 +18,8 @@ namespace Microex.AngularSpa.Extensions
             Converters = new List<JsonConverter>()
             {
                 new StringEnumConverter()
-            }
+            },
+            Formatting = Formatting.Indented
         };
 
         public static JsonSerializerSettings IgnoreErrorSerializeSettings { get; set; } = new JsonSerializerSettings()
@@ -40,7 +35,8 @@ namespace Microex.AngularSpa.Extensions
             Converters = new List<JsonConverter>()
             {
                 new StringEnumConverter()
-            }
+            },
+            Formatting = Formatting.Indented
         };
 
         public static string ToJson(this object @this, bool ignoreError = true)

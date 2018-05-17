@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using Aliyun.OSS;
-using Microex.AngularSpa.Extensions;
+using Microex.All.Extensions;
 using Microsoft.AspNetCore.Http;
 
-namespace Microex.AngularSpa.AliyunOss
+namespace Microex.All.AliyunOss
 {
     public class AliyunOssClient
     {

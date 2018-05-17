@@ -2,7 +2,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace Microex.AngularSpa.UEditor.Handlers
+namespace Microex.All.UEditor.Handlers
 {
     internal abstract class Handler
     {

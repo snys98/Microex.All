@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microex.AngularSpa.UEditor
+﻿namespace Microex.All.UEditor
 {
     internal class UEditorJsonConfig
     {

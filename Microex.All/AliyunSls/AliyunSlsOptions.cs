@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Microex.AngularSpa.AliyunSls
+namespace Microex.All.AliyunSls
 {
     public class AliyunSlsOptions
     {

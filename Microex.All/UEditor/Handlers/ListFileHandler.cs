@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 
-namespace Microex.AngularSpa.UEditor.Handlers
+namespace Microex.All.UEditor.Handlers
 {
     internal class ListFileManager : Handler
     {

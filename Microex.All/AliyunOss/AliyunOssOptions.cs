@@ -1,4 +1,4 @@
-﻿namespace Microex.AngularSpa.AliyunOss
+﻿namespace Microex.All.AliyunOss
 {
     public class AliyunOssOptions
     {

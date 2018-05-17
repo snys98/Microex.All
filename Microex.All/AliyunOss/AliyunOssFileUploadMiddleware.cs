@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microex.AngularSpa.Extensions;
+using Microex.All.Extensions;
 using Microsoft.AspNetCore.Http;
 
-namespace Microex.AngularSpa.AliyunOss
+namespace Microex.All.AliyunOss
 {
     public class AliyunOssFileUploadMiddleware
     {

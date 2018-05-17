@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Resources;
-using System.Text;
 using System.Threading.Tasks;
 using IdentityServer4.Extensions;
-using Microex.AngularSpa.Extensions;
-using Microex.AngularSpa.UEditor.Handlers;
+using Microex.All.Extensions;
+using Microex.All.UEditor.Handlers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Microex.AngularSpa.UEditor
+namespace Microex.All.UEditor
 {
     public class UEditorMiddleware : IMiddleware
     {
@@ -31,7 +26,7 @@ namespace Microex.AngularSpa.UEditor
             UEditorJsonConfig jsonConfig = null;
             if (options.ConfigUrl.IsNullOrEmpty() && Handler.Config == null)
             {
-                var resourceManager = new ResourceManager("Microex.AngularSpa.UEditor", typeof(Microex.AngularSpa.UEditor.UEditorMiddleware).GetTypeInfo().Assembly);
+                var resourceManager = new ResourceManager("Microex.AngularSpa.UEditor", typeof(UEditorMiddleware).GetTypeInfo().Assembly);
                 jsonConfig = resourceManager.GetString("DefaultConfig.Json").ToObject<UEditorJsonConfig>();
             }
             else

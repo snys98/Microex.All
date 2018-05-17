@@ -2,10 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
-namespace Microex.AngularSpa.UEditor.Handlers
+namespace Microex.All.UEditor.Handlers
 {
     internal class CrawlerHandler : Handler
     {

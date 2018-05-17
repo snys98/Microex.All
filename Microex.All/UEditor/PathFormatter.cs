@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Microex.AngularSpa.UEditor
+namespace Microex.All.UEditor
 {
     public static class PathFormatter
     {

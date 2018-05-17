@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using IdentityServer4.Extensions;
-using Microex.AngularSpa.AliyunOss;
-using Microex.AngularSpa.AliyunSls;
-using Microex.AngularSpa.UEditor;
+using Microex.All.AliyunOss;
+using Microex.All.AliyunSls;
+using Microex.All.UEditor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microex.AngularSpa.Extensions
+namespace Microex.All.Extensions
 {
     public static class Startup
     {

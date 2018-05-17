@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Microex.AngularSpa.AliyunOss;
-using Microex.AngularSpa.AliyunSls;
-using Microex.AngularSpa.UEditor;
+﻿using Microex.All.AliyunOss;
+using Microex.All.AliyunSls;
+using Microex.All.UEditor;
 
-namespace Microex.AngularSpa.Extensions
+namespace Microex.All.Extensions
 {
     public class MicroexOptions
     {

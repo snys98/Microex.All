@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace Microex.AngularSpa.AliyunSls
+namespace Microex.All.AliyunSls
 {
     public class AliyunSlsLoggingProvider:ILoggerProvider
     {
 
-        public AliyunSlsLoggingProvider(AliyunSlsOptions aliyunSlsOptions,LogLevel minLevel)
+        public AliyunSlsLoggingProvider(AliyunSlsOptions aliyunSlsOptions,LogLevel autologMinLevel)
         {
-            AliyunSlsLogger.Config(minLevel,aliyunSlsOptions.RemoteEndPoint, aliyunSlsOptions.AccessKeyId, aliyunSlsOptions.AccessKeySecret, aliyunSlsOptions.Project, aliyunSlsOptions.LogStore);
+            AliyunSlsLogger.Config(autologMinLevel,aliyunSlsOptions.RemoteEndPoint, aliyunSlsOptions.AccessKeyId, aliyunSlsOptions.AccessKeySecret, aliyunSlsOptions.Project, aliyunSlsOptions.LogStore);
         }
 
         public void Dispose()
