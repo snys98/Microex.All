@@ -1,5 +1,4 @@
 ﻿using Microex.All.AliyunOss;
-using Microex.All.AliyunSls;
 using Microex.All.UEditor;
 
 namespace Microex.All.Extensions
@@ -20,7 +19,6 @@ namespace Microex.All.Extensions
         { }
         public AliyunOssOptions AliyunOssOptions { get; set; }
         public UEditorOptions UEditorOptions { get; set; }
-        public AliyunSlsOptions AliyunSlsOptions { get; set; }
         public static MicroexOptions Instance {
             get
             {

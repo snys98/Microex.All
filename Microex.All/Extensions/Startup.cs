@@ -2,7 +2,6 @@
 using System.IO;
 using System.Reflection;
 using Microex.All.AliyunOss;
-using Microex.All.AliyunSls;
 using Microex.All.UEditor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -85,11 +84,6 @@ namespace Microex.All.Extensions
             builder.AddSingleton<MicroexOptions>((provider => options));
             builder.AddSingleton<AliyunOssClient>((provider => new AliyunOssClient(options.AliyunOssOptions)));
             builder.AddSingleton<UEditorOptions>((provider => options.UEditorOptions));
-            if (options.AliyunSlsOptions != null)
-            {
-                var slsOptions = options.AliyunSlsOptions;
-                builder.AddLogging((loggingBuilder) => { loggingBuilder.AddProvider(new AliyunSlsLoggingProvider(options.AliyunSlsOptions,slsOptions.MinLevel)); });
-            }
             return builder;
         }
 
