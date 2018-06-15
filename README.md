@@ -1,2 +1,2 @@
-# Microex.AngularSpa
-all for AngularSpa
+# Microex.All
+all for Microex
