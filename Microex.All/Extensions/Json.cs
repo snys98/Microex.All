@@ -6,9 +6,6 @@ namespace Microex.All.Extensions
 {
     public static class Json
     {
-        
-
-
         public static JsonSerializerSettings DefaultSerializeSettings { get; set; } = new JsonSerializerSettings()
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
@@ -39,7 +36,7 @@ namespace Microex.All.Extensions
             Formatting = Formatting.Indented
         };
 
-        public static string ToJson(this object @this, bool ignoreError = true)
+        public static string ToJson(this object @this, bool ignoreError = true,bool formated = false)
         {
             if (ignoreError)
             {

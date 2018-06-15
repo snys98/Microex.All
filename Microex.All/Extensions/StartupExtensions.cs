@@ -1,10 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Consul;
+using DnsClient;
+using IdentityServer4.Extensions;
 using Microex.All.AliyunOss;
-using Microex.All.Consul;
+using Microex.All.EntityFramework;
+using Microex.All.MicroService;
+using Microex.All.RestHttpClient;
 using Microex.All.UEditor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,148 +18,17 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 namespace Microex.All.Extensions
 {
     public static class StartupExtensions
     {
-        #region Consul
-        /// <summary>
-        /// 添加Consul的服务发现相关配置
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddConsulServiceDiscovery(this IServiceCollection services, Action<ServiceDiscoveryOptions> optionsAction)
-        {
-            var options = new ServiceDiscoveryOptions();
-            optionsAction.Invoke(options);
-            services.AddTransient(_=> options);
-            services.AddSingleton<IConsulClient>(p => new ConsulClient(cfg =>
-            {
-                if (!string.IsNullOrEmpty(options.ConsulOptions.HttpEndpoint))
-                {
-                    // if not configured, the client will use the default value "127.0.0.1:8500"
-                    cfg.Address = new Uri(options.ConsulOptions.HttpEndpoint);
-                }
-            }));
-            return services;
-        }
-
-        /// <summary>
-        /// 添加Consul的注册以及健康检查到pipeline
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="discoveryOptions"></param>
-        /// <param name="consulClient"></param>
-        /// <param name="applicationLifetime"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder AddConsulServiceDiscoveryAndHealthCheck(this IApplicationBuilder builder,
-            ServiceDiscoveryOptions discoveryOptions,
-            IConsulClient consulClient,
-            IApplicationLifetime applicationLifetime)
-        {
-            var features = builder.Properties["server.Features"] as FeatureCollection;
-            var addresses = features.Get<IServerAddressesFeature>()
-                .Addresses
-                .Select(p => new Uri(p));
-
-            foreach (var address in addresses)
-            {
-                var serviceId = $"{discoveryOptions.ServiceName}_{address.Host}:{address.Port}";
-
-                var httpCheck = new AgentServiceCheck()
-                {
-                    DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(1),
-                    Interval = TimeSpan.FromSeconds(30),
-                    HTTP = new Uri(address, "HealthCheck").OriginalString
-                };
-
-                var registration = new AgentServiceRegistration()
-                {
-                    Checks = new[] { httpCheck },
-                    Address = address.Host,
-                    ID = serviceId,
-                    Name = discoveryOptions.ServiceName,
-                    Port = address.Port
-                };
-
-                consulClient.Agent.ServiceRegister(registration).GetAwaiter().GetResult();
-
-                applicationLifetime.ApplicationStopping.Register(() =>
-                {
-                    consulClient.Agent.ServiceDeregister(serviceId).GetAwaiter().GetResult();
-                });
-            }
-
-            builder.Map("/HealthCheck", (x) => { x.UseMiddleware<HealthCheckMiddleware>(); });
-
-            return builder;
-        }
-        #endregion
-
-        #region 阿里云oss
-        /// <summary>
-        /// config aliyun oss
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="optionsAction"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddAliyunOss(this IServiceCollection builder, Action<AliyunOssOptions> optionsAction)
-        {
-            var options = new AliyunOssOptions();
-            optionsAction.Invoke(options);
-            builder.AddSingleton<AliyunOssClient>((provider => new AliyunOssClient(options)));
-            return builder;
-        }
-        /// <summary>
-        /// add aliyun oss middlewares to the pipe line
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder AddAliyunOss(this IApplicationBuilder builder)
-        {
-            var options = builder.ApplicationServices.GetRequiredService<AliyunOssOptions>();
-            builder.Map($@"/{options.LocalEndPoint.TrimStart('/')}", (x) =>
-            {
-                x.UseMiddleware<AliyunOssFileUploadMiddleware>();
-            });
-            return builder;
-        }
-        #endregion
-
-        #region UEditor
-        /// <summary>
-        /// config ueditor
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="optionsAction"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddUEditor(this IServiceCollection builder, Action<UEditorOptions> optionsAction)
-        {
-            var options = new UEditorOptions();
-            optionsAction.Invoke(options);
-            builder.AddSingleton(options);
-            return builder;
-        }
-        /// <summary>
-        /// add ueditor middlewares to the pipe line
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder AddUEditor(this IApplicationBuilder builder)
-        {
-            var options = builder.ApplicationServices.GetRequiredService<UEditorOptions>();
-            builder.Map($@"/{options.EndPoint.TrimStart('/')}", (x) =>
-            {
-                x.UseMiddleware<UEditorMiddleware>();
-            });
-            return builder;
-        }
-        #endregion
-
         /// <summary>
         /// Config angular4 spa pipe line in one line of code, default serve path is \wwwroot\index.html
         /// </summary>
@@ -162,7 +37,7 @@ namespace Microex.All.Extensions
         /// <param name="wwwrootPath"></param>
         /// <param name="angularIndexName"></param>
         /// <returns></returns>
-        public static IApplicationBuilder AddAngularRoute(this IApplicationBuilder builder, bool configServeStatic = true, string wwwrootPath = @"\wwwroot", string angularIndexName = "index.html")
+        public static IApplicationBuilder UseAngularRoute(this IApplicationBuilder builder, bool configServeStatic = true, string wwwrootPath = @"\wwwroot", string angularIndexName = "index.html")
         {
             if (configServeStatic)
             {
@@ -176,13 +51,12 @@ namespace Microex.All.Extensions
             });
             return builder;
         }
-
         /// <summary>
         /// Use a preffered json format setting(eg: format date at yyyy-MM-dd HH:mm:ss & ignore loop reference & so on)
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IMvcBuilder AddPrefferedJsonSettings(this IMvcBuilder builder)
+        public static IMvcBuilder UsePrefferedJsonSettings(this IMvcBuilder builder)
         {
             builder.AddJsonOptions(jsonOptions =>
             {
@@ -209,35 +83,63 @@ namespace Microex.All.Extensions
             });
             return builder;
         }
+        
         /// <summary>
-        /// 用于自动迁移dbcontext
+        /// 添加更便于使用的resthttpclient
         /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="host"></param>
-        /// <param name="seedAction"></param>
+        /// <param name="services"></param>
+        /// <param name="optionsAction"></param>
         /// <returns></returns>
-        public static IWebHost MigrateDbContext<TContext>(this IWebHost host, Action<TContext, IServiceProvider> seedAction) where TContext : DbContext
+        public static IServiceCollection AddRestHttpClient(this IServiceCollection services,Action<ResilientPolicyOptions> optionsAction = null)
         {
-            using (var scope = host.Services.CreateScope())
-            {//只在本区间内有效
-                var services = scope.ServiceProvider;
-                var logger = services.GetRequiredService<ILogger<TContext>>();
-                var context = services.GetService<TContext>();
-
-                try
-                {
-                    context.Database.Migrate();
-                    seedAction(context, services);
-
-                    logger.LogInformation($"执行DBContext {typeof(TContext).Name} seed执行成功");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogCritical(ex, $"执行DBContext {typeof(TContext).Name} seed方法失败");
-                }
+            if (optionsAction != null)
+            {
+                var option = new ResilientPolicyOptions();
+                optionsAction.Invoke(option);
+                services.AddSingleton<IRestHttpClient, ResilientRestHttpClient>(_services=> new ResilientRestHttpClient(_services.GetRequiredService<ILogger<ResilientRestHttpClient>>(),option));
             }
-
-            return host;
+            else
+            {
+                services.AddSingleton<IRestHttpClient, StandardRestHttpClient>();
+            }
+            return services;
         }
+        public static IServiceCollection AddMicroService(this IServiceCollection serviceCollection,string serviceName = null)
+        {
+            serviceCollection.AddConsulServiceDiscoveryAndHealthCheck();
+
+            return serviceCollection;
+        }
+
+        public static IApplicationBuilder UseMicroService(this IApplicationBuilder appBuilder)
+        {
+            
+            appBuilder.UseConsulServiceDiscoveryAndHealthCheck(
+                appBuilder.ApplicationServices.GetService<ServiceDiscoveryAndHealthCheckOptions>(),
+                appBuilder.ApplicationServices.GetService<IConsulClient>(),
+                appBuilder.ApplicationServices.GetService<IApplicationLifetime>(),
+                appBuilder.ApplicationServices.GetService<ILogger<IStartup>>(),
+                appBuilder.ApplicationServices.GetService<IHostingEnvironment>());
+            return appBuilder;
+        }
+
+        /// <summary>
+        /// Configures <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> to use Application Insights services.
+        /// </summary>
+        /// <param name="webHostBuilder">The <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> instance.</param>
+        /// <returns>The <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" />.</returns>
+        public static IWebHostBuilder ConfigEsLogging(this IWebHostBuilder webHostBuilder)
+        {
+            webHostBuilder.ConfigureLogging((context, builder) =>
+            {
+                if (!context.HostingEnvironment.IsDevelopment())
+                {
+                    builder.AddElasticsearch(); 
+                }
+            });
+
+            return webHostBuilder;
+        }
+
     }
 }
