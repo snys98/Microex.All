@@ -3,41 +3,54 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microex.All.Extensions;
 using Microex.All.IdentityServer;
 using Microex.All.PathMappedProxy;
-using Microex.All.PathMapProxy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using HttpHeaders = Aliyun.OSS.Util.HttpHeaders;
 
 namespace Microex.All.Common
 {
-    public class PathMapProxyMiddleware:IMiddleware
+    public class PortProxyMiddleware:IMiddleware
     {
+        private readonly ILogger<PortProxyMiddleware> _logger;
         private HttpClient _httpClient;
-        private List<PathMap> _segment2PortMapping;
-        private PathMap _curMap;
+        private List<string> _portMappings;
 
-        public PathMapProxyMiddleware(PathMapProxyOptions options)
+        public PortProxyMiddleware(PathMapProxyOptions options,ILogger<PortProxyMiddleware> logger)
         {
-            this._segment2PortMapping = options.PathMaps;
+            _logger = logger;
+            this._portMappings = options.PortMappings;
         }
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+            var session = context.Session;
             _httpClient = new HttpClient();
-            foreach (var seg2port in this._segment2PortMapping)
+            foreach (var portMapping in this._portMappings)
             {
-                if (context.Request.Path.StartsWithSegments(seg2port.Path))
+                if (context.Request.Query.TryGetValue("port",out StringValues port) && port == portMapping)
                 {
-                    _curMap = seg2port;
+                    session.SetString("port", portMapping);
+                }
+                else if(session.TryGetValue("port", out var portValue) && Convert.ToString(portValue) == portMapping)
+                {
+                }
+                else
+                {
+                    await next.Invoke(context);
                 }
 
-                if (_curMap?.Path != seg2port.Path)
+                var curPort = session.GetString("port");
+
+                if (curPort != portMapping)
                 {
                     continue;
                 }
@@ -66,9 +79,9 @@ namespace Microex.All.Common
                         }
                     }
                 }
-                request.Headers.Host = $"{_curMap.ProxyAddress.Host}:{_curMap.ProxyAddress.Port}";
+                request.Headers.Host = $"localhost:{curPort}";
                 string uriString =
-                    $"{ _curMap.ProxyAddress.Scheme}://{ _curMap.ProxyAddress.Host}:{ _curMap.ProxyAddress.Port}{ context.Request.PathBase}{ context.Request.Path}{ context.Request.QueryString}";
+                    $"{ context.Request.Scheme}://localhost:{ curPort}{ context.Request.PathBase}{ context.Request.Path}{ context.Request.QueryString}";
                 request.RequestUri = new Uri(uriString);
                 request.Method = new HttpMethod(context.Request.Method);
                 HttpResponseMessage responseMessage = null;
@@ -89,6 +102,7 @@ namespace Microex.All.Common
                 }
                 catch (Exception e)
                 {
+                    _logger.LogWarning(e, "代理访问调用失败,request:{request}", request.ToJson(formated:true));
                     await next.Invoke(context);
                 }
                 finally

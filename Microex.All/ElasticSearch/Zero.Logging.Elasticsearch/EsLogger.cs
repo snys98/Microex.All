@@ -40,7 +40,7 @@ namespace Zero.Logging.Elasticsearch
 
         public void Log<TState>(DateTimeOffset timestamp, LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            var jsonData = new { timestamp = timestamp, level = logLevel.ToString(), env = _env, serviceName = _serviceName,hostAddress = _hostAddress, category = _category, message = formatter(state, exception), exceptions = new List<ExceptionModel>() };
+            var jsonData = new { timestamp = timestamp, level = logLevel.ToString(), env = _env, serviceName = _serviceName,hostAddress = _hostAddress, category = _category, eventId, message = formatter(state, exception), exceptions = new List<ExceptionModel>() };
             if (exception != null)
             {
                 WriteSingleException(jsonData.exceptions, exception, 0);

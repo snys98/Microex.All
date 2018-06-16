@@ -111,7 +111,7 @@ namespace Microex.All.Extensions
             return serviceCollection;
         }
 
-        public static IApplicationBuilder UseMicroService(this IApplicationBuilder appBuilder)
+        public static IApplicationBuilder UseMicroService(this IApplicationBuilder appBuilder,string iisExternalPort = "80")
         {
             
             appBuilder.UseConsulServiceDiscoveryAndHealthCheck(
@@ -119,7 +119,8 @@ namespace Microex.All.Extensions
                 appBuilder.ApplicationServices.GetService<IConsulClient>(),
                 appBuilder.ApplicationServices.GetService<IApplicationLifetime>(),
                 appBuilder.ApplicationServices.GetService<ILogger<IStartup>>(),
-                appBuilder.ApplicationServices.GetService<IHostingEnvironment>());
+                appBuilder.ApplicationServices.GetService<IHostingEnvironment>(),
+                iisExternalPort);
             return appBuilder;
         }
 

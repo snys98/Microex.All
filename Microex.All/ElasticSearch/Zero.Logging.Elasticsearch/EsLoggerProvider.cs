@@ -28,7 +28,7 @@ namespace Zero.Logging.Elasticsearch
             if (_serverIp == null)
             {
                 IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-                string externalIP = ipHost.AddressList[0].ToString();
+                string externalIP = ipHost.AddressList[0].MapToIPv4().ToString();
                 _serverIp = externalIP;
             }
             var loggerOptions = options.CurrentValue;

@@ -57,55 +57,54 @@ namespace Microex.All.MicroService
             IConsulClient consulClient,
             IApplicationLifetime applicationLifetime,
             ILogger<IStartup> logger,
-            IHostingEnvironment env)
+            IHostingEnvironment env,
+            string iisExternalPort)
         {
             var features = builder.Properties["server.Features"] as FeatureCollection;
-            //只取第一个绑定
+            //基于iis的WebDeploy发布,只可能有一个绑定,所以只取第一个绑定
             Debug.Assert(features != null, nameof(features) + " != null");
-            var addresses = features.Get<IServerAddressesFeature>()
+            var address = features.Get<IServerAddressesFeature>()
                 .Addresses
-                .Select(p => new Uri(p));
+                .Select(p => new Uri(p)).FirstOrDefault();
 
             if (options.ServiceName.IsNullOrEmpty())
             {
                 options.ServiceName = env.ApplicationName;
             }
 
+            AgentServiceRegistration registration = null;
             try
             {
-                foreach (var address in addresses)
+                var serviceId = $"{options.ServiceName}_{address.Host}:{iisExternalPort}";
+
+                var httpCheck = new AgentServiceCheck()
                 {
-                    var serviceId = $"{options.ServiceName}_{address.Host}:{address.Port}";
+                    DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(options.HealthCheckOptions.DeregisterTimeout),
+                    Interval = TimeSpan.FromSeconds(options.HealthCheckOptions.Interval),
+                    HTTP = new Uri(new Uri($"{options.Schema}://{address.Host}:{iisExternalPort}"), "HealthCheck").OriginalString
+                };
 
-                    var httpCheck = new AgentServiceCheck()
-                    {
-                        DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(options.HealthCheckOptions.DeregisterTimeout),
-                        Interval = TimeSpan.FromSeconds(options.HealthCheckOptions.Interval),
-                        HTTP = new Uri(new Uri($"{options.Schema}://{address.Host}:{address.Port}"), "HealthCheck").OriginalString
-                    };
+                registration = new AgentServiceRegistration()
+                {
+                    Checks = new[] { httpCheck },
+                    Address = address.Host,
+                    ID = serviceId,
+                    Name = options.ServiceName,
+                    Port = int.Parse(iisExternalPort),
+                };
 
-                    var registration = new AgentServiceRegistration()
-                    {
-                        Checks = new[] { httpCheck },
-                        Address = address.Host,
-                        ID = serviceId,
-                        Name = options.ServiceName,
-                        Port = address.Port,
-                    };
+                consulClient.Agent.ServiceRegister(registration).GetAwaiter().GetResult();
 
-                    consulClient.Agent.ServiceRegister(registration).GetAwaiter().GetResult();
-
-                    applicationLifetime.ApplicationStopping.Register(() =>
-                    {
-                        consulClient.Agent.ServiceDeregister(serviceId).GetAwaiter().GetResult();
-                    });
-                }
+                applicationLifetime.ApplicationStopping.Register(() =>
+                {
+                    consulClient.Agent.ServiceDeregister(serviceId).GetAwaiter().GetResult();
+                });
             }
             catch (Exception e)
             {
                 if (!env.IsDevelopment())
                 {
-                    logger.LogCritical(e,"服务发现注册失败,请检查当前服务发现配置", features,options);
+                    logger.LogCritical(e, "服务发现注册失败,请检查当前服务发现配置{registration}", registration);
                 }
                 else
                 {
