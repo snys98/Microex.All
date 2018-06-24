@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Zero.Logging.Commom
+namespace Microex.All.ElasticSearch.Zero.Logging.Commom
 {
     public abstract class BatchingLoggerProvider : ILoggerProvider
     {

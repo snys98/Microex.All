@@ -1,12 +1,11 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Options;
-using Zero.Logging.Elasticsearch;
 
-namespace Microsoft.Extensions.Logging
+namespace Microex.All.ElasticSearch.Zero.Logging.Elasticsearch
 {
     public static class EsLoggerFactoryExtensions
     {

@@ -8,8 +8,9 @@ using Microex.All.Common;
 
 namespace Microex.All.EntityFramework
 {
-    public interface IRepository<TEntity, TKey> where TEntity : class
+    public interface IRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
     {
+        IUnitOfWork UnitOfWork { get; }
         Task<PagedList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10);
 
         Task<TEntity> GetAsync(TKey entityId);
@@ -23,7 +24,7 @@ namespace Microex.All.EntityFramework
         Task<bool> Exists(TKey entityId);
     }
 
-    public interface IRepository<TEntity> : IRepository<TEntity, int> where TEntity:class 
+    public interface IRepository<TEntity> : IRepository<TEntity, string> where TEntity:class, IEntity<string>
     {
     }
 }

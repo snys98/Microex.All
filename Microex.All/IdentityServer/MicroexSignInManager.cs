@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microex.All.IdentityServer.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -12,16 +13,16 @@ using Microsoft.Extensions.Options;
 
 namespace Microex.All.IdentityServer
 {
-    public class MicroexSignInManager<T> : SignInManager<T> where T: class 
+    public class MicroexSignInManager : SignInManager<User>
     {
         public override ILogger Logger { get => base.Logger; set => base.Logger = value; }
 
-        public override Task<bool> CanSignInAsync(T user)
+        public override Task<bool> CanSignInAsync(User user)
         {
             return base.CanSignInAsync(user);
         }
 
-        public override Task<SignInResult> CheckPasswordSignInAsync(T user, string password, bool lockoutOnFailure)
+        public override Task<SignInResult> CheckPasswordSignInAsync(User user, string password, bool lockoutOnFailure)
         {
             return base.CheckPasswordSignInAsync(user, password, lockoutOnFailure);
         }
@@ -31,7 +32,7 @@ namespace Microex.All.IdentityServer
             return base.ConfigureExternalAuthenticationProperties(provider, redirectUrl, userId);
         }
 
-        public override Task<ClaimsPrincipal> CreateUserPrincipalAsync(T user)
+        public override Task<ClaimsPrincipal> CreateUserPrincipalAsync(User user)
         {
             return base.CreateUserPrincipalAsync(user);
         }
@@ -71,7 +72,7 @@ namespace Microex.All.IdentityServer
             return base.GetHashCode();
         }
 
-        public override Task<T> GetTwoFactorAuthenticationUserAsync()
+        public override Task<User> GetTwoFactorAuthenticationUserAsync()
         {
             return base.GetTwoFactorAuthenticationUserAsync();
         }
@@ -81,12 +82,12 @@ namespace Microex.All.IdentityServer
             return base.IsSignedIn(principal);
         }
 
-        public override Task<bool> IsTwoFactorClientRememberedAsync(T user)
+        public override Task<bool> IsTwoFactorClientRememberedAsync(User user)
         {
             return base.IsTwoFactorClientRememberedAsync(user);
         }
 
-        public override Task<SignInResult> PasswordSignInAsync(T user, string password, bool isPersistent, bool lockoutOnFailure)
+        public override Task<SignInResult> PasswordSignInAsync(User user, string password, bool isPersistent, bool lockoutOnFailure)
         {
             return base.PasswordSignInAsync(user, password, isPersistent, lockoutOnFailure);
         }
@@ -96,22 +97,22 @@ namespace Microex.All.IdentityServer
             return base.PasswordSignInAsync(userName, password, isPersistent, lockoutOnFailure);
         }
 
-        public override Task RefreshSignInAsync(T user)
+        public override Task RefreshSignInAsync(User user)
         {
             return base.RefreshSignInAsync(user);
         }
 
-        public override Task RememberTwoFactorClientAsync(T user)
+        public override Task RememberTwoFactorClientAsync(User user)
         {
             return base.RememberTwoFactorClientAsync(user);
         }
 
-        public override Task SignInAsync(T user, bool isPersistent, string authenticationMethod = null)
+        public override Task SignInAsync(User user, bool isPersistent, string authenticationMethod = null)
         {
             return base.SignInAsync(user, isPersistent, authenticationMethod);
         }
 
-        public override Task SignInAsync(T user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
+        public override Task SignInAsync(User user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
         {
             return base.SignInAsync(user, authenticationProperties, authenticationMethod);
         }
@@ -146,47 +147,47 @@ namespace Microex.All.IdentityServer
             return base.UpdateExternalAuthenticationTokensAsync(externalLogin);
         }
 
-        public override Task<T> ValidateSecurityStampAsync(ClaimsPrincipal principal)
+        public override Task<User> ValidateSecurityStampAsync(ClaimsPrincipal principal)
         {
             return base.ValidateSecurityStampAsync(principal);
         }
 
-        public override Task<bool> ValidateSecurityStampAsync(T user, string securityStamp)
+        public override Task<bool> ValidateSecurityStampAsync(User user, string securityStamp)
         {
             return base.ValidateSecurityStampAsync(user, securityStamp);
         }
 
-        public override Task<T> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
+        public override Task<User> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
         {
             return base.ValidateTwoFactorSecurityStampAsync(principal);
         }
 
-        protected override Task<bool> IsLockedOut(T user)
+        protected override Task<bool> IsLockedOut(User user)
         {
             return base.IsLockedOut(user);
         }
 
-        protected override Task<SignInResult> LockedOut(T user)
+        protected override Task<SignInResult> LockedOut(User user)
         {
             return base.LockedOut(user);
         }
 
-        protected override Task<SignInResult> PreSignInCheck(T user)
+        protected override Task<SignInResult> PreSignInCheck(User user)
         {
             return base.PreSignInCheck(user);
         }
 
-        protected override Task ResetLockout(T user)
+        protected override Task ResetLockout(User user)
         {
             return base.ResetLockout(user);
         }
 
-        protected override Task<SignInResult> SignInOrTwoFactorAsync(T user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false)
+        protected override Task<SignInResult> SignInOrTwoFactorAsync(User user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false)
         {
             return base.SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
         }
 
-        public MicroexSignInManager(UserManager<T> userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<T> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<T>> logger, IAuthenticationSchemeProvider schemes) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes)
+        public MicroexSignInManager(UserManager<User> userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<User> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<User>> logger, IAuthenticationSchemeProvider schemes) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes)
         {
         }
     }

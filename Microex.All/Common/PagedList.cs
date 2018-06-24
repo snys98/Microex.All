@@ -28,18 +28,4 @@ namespace Microex.All.Common
             return result;
         }
     }
-
-    public static class Extensions
-    {
-        public static PagedList<TTarget> Cast<T,TTarget>(this PagedList<T> @this,Func<T, TTarget> changeExpression) where TTarget : class where T:class
-        {
-            var result = new PagedList<TTarget>()
-            {
-                PageSize = @this.PageSize,
-                TotalCount = @this.TotalCount
-            };
-            result.Data.AddRange(@this.Data.Select(changeExpression).ToArray());
-            return result;
-        }
-    }
 }

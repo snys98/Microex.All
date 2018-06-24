@@ -5,15 +5,13 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using Microex.All.MicroService;
+using Microex.All.Common;
+using Microex.All.ElasticSearch.Zero.Logging.Commom;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Zero.Logging.Commom;
 
-namespace Zero.Logging.Elasticsearch
+namespace Microex.All.ElasticSearch.Zero.Logging.Elasticsearch
 {
     [ProviderAlias("Elasticsearch")]
     public class EsLoggerProvider : BatchingLoggerProvider
@@ -28,8 +26,7 @@ namespace Zero.Logging.Elasticsearch
             if (_serverIp == null)
             {
                 IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-                string externalIP = ipHost.AddressList[0].MapToIPv4().ToString();
-                _serverIp = externalIP;
+                _serverIp = ipHost.AddressList.GetLocalIPv4().MapToIPv4().ToString();
             }
             var loggerOptions = options.CurrentValue;
             if (!string.IsNullOrWhiteSpace(loggerOptions.TemplateName))

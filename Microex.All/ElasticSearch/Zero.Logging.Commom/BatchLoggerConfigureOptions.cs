@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Zero.Logging.Commom
+namespace Microex.All.ElasticSearch.Zero.Logging.Commom
 {
     public class BatchLoggerConfigureOptions : IConfigureOptions<BatchingLoggerOptions>
     {

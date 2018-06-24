@@ -7,6 +7,7 @@ using System.Text;
 using Consul;
 using DnsClient;
 using IdentityServer4.Extensions;
+using Microex.All.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -60,12 +61,8 @@ namespace Microex.All.MicroService
             IHostingEnvironment env,
             string iisExternalPort)
         {
-            var features = builder.Properties["server.Features"] as FeatureCollection;
-            //基于iis的WebDeploy发布,只可能有一个绑定,所以只取第一个绑定
-            Debug.Assert(features != null, nameof(features) + " != null");
-            var address = features.Get<IServerAddressesFeature>()
-                .Addresses
-                .Select(p => new Uri(p)).FirstOrDefault();
+            IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
+            var address = ipHost.AddressList.GetLocalIPv4().MapToIPv4().ToString();
 
             if (options.ServiceName.IsNullOrEmpty())
             {
@@ -75,19 +72,19 @@ namespace Microex.All.MicroService
             AgentServiceRegistration registration = null;
             try
             {
-                var serviceId = $"{options.ServiceName}_{address.Host}:{iisExternalPort}";
+                var serviceId = $"{options.ServiceName}_{address}:{iisExternalPort}";
 
                 var httpCheck = new AgentServiceCheck()
                 {
                     DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(options.HealthCheckOptions.DeregisterTimeout),
                     Interval = TimeSpan.FromSeconds(options.HealthCheckOptions.Interval),
-                    HTTP = new Uri(new Uri($"{options.Schema}://{address.Host}:{iisExternalPort}"), "HealthCheck").OriginalString
+                    HTTP = new Uri(new Uri($"{options.Schema}://{address}:{iisExternalPort}"), "HealthCheck").OriginalString
                 };
 
                 registration = new AgentServiceRegistration()
                 {
                     Checks = new[] { httpCheck },
-                    Address = address.Host,
+                    Address = address,
                     ID = serviceId,
                     Name = options.ServiceName,
                     Port = int.Parse(iisExternalPort),

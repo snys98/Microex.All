@@ -9,15 +9,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Microex.All.EntityFramework
 {
-    public class BasicRepository<TEntity,TContext,TKey> :IRepository<TEntity, TKey> where TEntity:class where TContext:DbContext
+    public class BasicRepository<TEntity,TContext,TKey> :IRepository<TEntity, TKey> where TEntity:class, IEntity<TKey> where TContext:DbContext,IUnitOfWork
     {
         private readonly TContext _dbContext;
 
         public BasicRepository(TContext dbContext)
         {
             _dbContext = dbContext;
+            this.UnitOfWork = dbContext;
         }
-        public async Task<PagedList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10)
+
+        public IUnitOfWork UnitOfWork { get; }
+
+        public virtual async Task<PagedList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10)
         {
             var pagedList = new PagedList<TEntity>();
             IQueryable<TEntity> query = _dbContext.Query<TEntity>();
@@ -40,12 +44,12 @@ namespace Microex.All.EntityFramework
             return pagedList;
         }
 
-        public async Task<TEntity> GetAsync(TKey entityId)
+        public virtual async Task<TEntity> GetAsync(TKey entityId)
         {
             return await _dbContext.FindAsync<TEntity>(entityId);
         }
 
-        public async Task<int> AddAsync(TEntity entity)
+        public virtual async Task<int> AddAsync(TEntity entity)
         {
             var addResult = await _dbContext.AddAsync(entity);
             if (addResult.State == EntityState.Added)
@@ -56,7 +60,7 @@ namespace Microex.All.EntityFramework
             return 0;
         }
 
-        public async Task<int> UpdateAsync(TEntity entity)
+        public virtual async Task<int> UpdateAsync(TEntity entity)
         {
             var addResult = _dbContext.Update(entity);
             if (addResult.State == EntityState.Modified)
@@ -67,7 +71,7 @@ namespace Microex.All.EntityFramework
             return 0;
         }
 
-        public async Task<int> DeleteAsync(TKey entityId)
+        public virtual async Task<int> DeleteAsync(TKey entityId)
         {
             var addResult = _dbContext.Remove(_dbContext.Find<TEntity>(entityId));
             if (addResult.State == EntityState.Deleted)
@@ -78,7 +82,7 @@ namespace Microex.All.EntityFramework
             return 0;
         }
 
-        public async Task<bool> Exists(TKey id)
+        public virtual async Task<bool> Exists(TKey id)
         {
             var existsWithClientName = await _dbContext.FindAsync<TEntity>(id);
             return existsWithClientName == null;

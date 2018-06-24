@@ -26,6 +26,11 @@ namespace Microex.All.IdentityServer
 
         public override Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
         {
+            if (client.PostLogoutRedirectUris.Any(x => x == "*"))
+            {
+                return Task.FromResult(true);
+            }
+
             if (_env.IsDevelopment())
             {
                 return Task.FromResult(true);
@@ -36,6 +41,10 @@ namespace Microex.All.IdentityServer
 
         public override Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
         {
+            if (client.RedirectUris.Any(x=>x == "*"))
+            {
+                return Task.FromResult(true);
+            }
             if (_env.IsDevelopment())
             {
                 return Task.FromResult(true);

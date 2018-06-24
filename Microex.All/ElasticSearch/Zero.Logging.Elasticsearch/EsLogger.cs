@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microex.All.ElasticSearch.Zero.Logging.Commom;
 using Microsoft.Extensions.Logging;
-using Zero.Logging.Commom;
 
-namespace Zero.Logging.Elasticsearch
+namespace Microex.All.ElasticSearch.Zero.Logging.Elasticsearch
 {
     public class EsLogger : ILogger
     {
         private readonly BatchingLoggerProvider _provider;
         private readonly string _category;
         private readonly string _serviceName;
-        private readonly string _hostAddress;
+        private readonly string _serverIp;
         private readonly string _env;
 
         public EsLogger(BatchingLoggerProvider loggerProvider, string categoryName, string env, string serviceName,
-            string hostAddress)
+            string serverIp)
         {
             _provider = loggerProvider;
             _category = categoryName;
             _serviceName = serviceName;
-            _hostAddress = hostAddress;
+            _serverIp = serverIp;
             _env = env;
         }
 
@@ -40,7 +40,7 @@ namespace Zero.Logging.Elasticsearch
 
         public void Log<TState>(DateTimeOffset timestamp, LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            var jsonData = new { timestamp = timestamp, level = logLevel.ToString(), env = _env, serviceName = _serviceName,hostAddress = _hostAddress, category = _category, eventId, message = formatter(state, exception), exceptions = new List<ExceptionModel>() };
+            var jsonData = new { timestamp = timestamp, level = logLevel.ToString(), env = _env, serviceName = _serviceName, serverIp = _serverIp, category = _category, eventId, message = formatter(state, exception), exceptions = new List<ExceptionModel>() };
             if (exception != null)
             {
                 WriteSingleException(jsonData.exceptions, exception, 0);

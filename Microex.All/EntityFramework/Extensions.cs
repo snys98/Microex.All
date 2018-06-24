@@ -5,10 +5,16 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using IdentityServer4.Models;
 using Microex.All.IdentityServer;
+using Microex.All.IdentityServer.Identity;
+using Microex.All.IdentityServer.PredefinedConfigurations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
+using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,7 +30,7 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="host"></param>
         /// <returns></returns>
-        public static IWebHost AutoMigrateDbContext<TContext,TUser>(this IWebHost host) where TContext : IdentityServerDbContext<TUser> where TUser : IdentityUser, new()
+        public static IWebHost EnsurePredefinedIdentityServerConfigs<TContext>(this IWebHost host) where TContext : IdentityServerDbContext
         {
             using (var scope = host.Services.CreateScope())
             {//只在本区间内有效
@@ -35,6 +41,10 @@ namespace Microex.All.EntityFramework
                     
                     var context = services.GetRequiredService<TContext>();
                     context.Database.Migrate();
+                    context.EnsureIdentityServerSeedData(new[] { ClientConfiguration.LocalServer },
+                        ResourceConfiguration.IdentityResources,
+                        ResourceConfiguration.ApiResources,
+                        IdentityConfiguration.UserRoles);
                     logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
                 }
                 catch (Exception e)
@@ -54,7 +64,7 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="serviceCollection"></param>
         /// <returns></returns>
-        public static IServiceCollection AddRepository<TContext>(this IServiceCollection serviceCollection) where TContext : DbContext
+        public static IServiceCollection AddRepository<TContext>(this IServiceCollection serviceCollection) where TContext : DbContext,IUnitOfWork
         {
             var dbSetsPropertyInfos = typeof(TContext).GetProperties().Where(x => x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>)).ToList();
             foreach (var table in dbSetsPropertyInfos)
@@ -84,6 +94,33 @@ namespace Microex.All.EntityFramework
             query = orderByDescending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
 
             return query.Skip((page - 1) * pageSize).Take(pageSize);
+        }
+
+        /// <summary>
+        /// Configures IEntity.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder.</param>
+        public static void ConfigIEntities<TContext>(this ModelBuilder modelBuilder) where TContext : DbContext
+        {
+            var dbSets = typeof(TContext).GetProperties()
+                .Where(x => x.PropertyType.IsGenericType &&
+                            x.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>) &&
+                            x.PropertyType.GenericTypeArguments[0].GetInterface(nameof(IEntity)) != null)
+                .ToList();
+
+            void ConfigIEntity(EntityTypeBuilder options)
+            {
+                options.HasKey(nameof(IEntity.Id));
+                options.Property<string>(nameof(IEntity.Id)).HasValueGenerator<PrettyStringGuidGenerator>();
+                options.Property<DateTime>(nameof(IEntity.CreateTime)).ValueGeneratedOnAdd();
+                options.Property<DateTime>(nameof(IEntity.LastModifyTime)).ValueGeneratedOnUpdate();
+            }
+
+            foreach (var table in dbSets)
+            {
+                var entityType = table.PropertyType.GenericTypeArguments[0];
+                modelBuilder.Entity(entityType, ConfigIEntity);
+            }
         }
     }
 }

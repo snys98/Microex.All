@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microex.All.IdentityServer.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -15,19 +16,19 @@ using Microsoft.Extensions.Options;
 
 namespace Microex.All.IdentityServer
 {
-    public class MicroexUserManager<TUser> : UserManager<TUser> where TUser : IdentityUser
+    public class MicroexUserManager : UserManager<User>
     {
         private IServiceProvider _services;
 
-        public MicroexUserManager(IUserStore<TUser> store,
+        public MicroexUserManager(IUserStore<User> store,
             IOptions<IdentityOptions> optionsAccessor,
-            IPasswordHasher<TUser> passwordHasher,
-            IEnumerable<IUserValidator<TUser>> userValidators,
-            IEnumerable<IPasswordValidator<TUser>> passwordValidators,
+            IPasswordHasher<User> passwordHasher,
+            IEnumerable<IUserValidator<User>> userValidators,
+            IEnumerable<IPasswordValidator<User>> passwordValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
             IServiceProvider services,
-            ILogger<MicroexUserManager<TUser>> logger) : base(store,
+            ILogger<MicroexUserManager> logger) : base(store,
             optionsAccessor,
             passwordHasher,
             userValidators,
@@ -39,12 +40,12 @@ namespace Microex.All.IdentityServer
         {
             this._services = services;
         }
-        public async Task<TUser> FindByPhoneNumberAsync(string phone)
+        public async Task<User> FindByPhoneNumberAsync(string phone)
         {
             this.ThrowIfDisposed();
             if (phone == null)
                 throw new ArgumentNullException(nameof(phone));
-            TUser byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<TUser, bool>>)(u => u.PhoneNumber == phone), CancellationToken.None);
+            User byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<User, bool>>)(u => u.PhoneNumber == phone), CancellationToken.None);
             if ((object)byEmailAsync == null && this.Options.Stores.ProtectPersonalData)
             {
                 ILookupProtectorKeyRing service = this._services.GetService<ILookupProtectorKeyRing>();
@@ -54,7 +55,7 @@ namespace Microex.All.IdentityServer
                     foreach (string allKeyId in service.GetAllKeyIds())
                     {
                         
-                        byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<TUser, bool>>)(u => u.PhoneNumber == protector.Protect(allKeyId, phone)), CancellationToken.None);
+                        byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<User, bool>>)(u => u.PhoneNumber == protector.Protect(allKeyId, phone)), CancellationToken.None);
                         if ((object)byEmailAsync != null)
                             return byEmailAsync;
                     }
@@ -64,9 +65,9 @@ namespace Microex.All.IdentityServer
             return byEmailAsync;
         }
 
-        private IUserPhoneNumberStore<TUser> GetPhoneNumberStore()
+        private IUserPhoneNumberStore<User> GetPhoneNumberStore()
         {
-            IUserPhoneNumberStore<TUser> store = this.Store as IUserPhoneNumberStore<TUser>;
+            IUserPhoneNumberStore<User> store = this.Store as IUserPhoneNumberStore<User>;
             if (store != null)
                 return store;
             throw new NotSupportedException("StoreNotIUserPhoneNumberStore");

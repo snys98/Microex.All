@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Zero.Logging.Commom
+namespace Microex.All.ElasticSearch.Zero.Logging.Commom
 {
     public struct LogMessage
     {

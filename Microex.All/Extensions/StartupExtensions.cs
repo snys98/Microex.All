@@ -8,6 +8,7 @@ using Consul;
 using DnsClient;
 using IdentityServer4.Extensions;
 using Microex.All.AliyunOss;
+using Microex.All.ElasticSearch.Zero.Logging.Elasticsearch;
 using Microex.All.EntityFramework;
 using Microex.All.MicroService;
 using Microex.All.RestHttpClient;

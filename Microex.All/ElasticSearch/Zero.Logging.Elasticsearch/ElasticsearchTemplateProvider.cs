@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Zero.Logging.Elasticsearch
+namespace Microex.All.ElasticSearch.Zero.Logging.Elasticsearch
 {
     internal class ElasticsearchTemplateProvider
     {

@@ -26,26 +26,6 @@ namespace Microex.All.IdentityServer
         {
         }
 
-        public class ClientConsts : ConstValue<string>
-        {
-            public static ClientConsts LocalServerProxyClientName = new ClientConsts(nameof(LocalServerProxyClientName), "LocalServerProxyClient");
-
-            public ClientConsts(string name, string value) : base(name, value)
-            {
-            }
-        }
-
-        public class ApiResourceConsts : ConstValue<ApiResource>
-        {
-            protected ApiResourceConsts(string name, ApiResource value) : base(name, value)
-            {
-            }
-
-            protected ApiResourceConsts()
-            {
-            }
-        }
-
         public class IdentityRoleConsts : ConstValue<string>
         {
             protected IdentityRoleConsts()
