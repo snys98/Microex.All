@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
+using Microex.All.Common;
 using Microex.All.IdentityServer;
 using Microex.All.IdentityServer.Identity;
 using Microex.All.IdentityServer.PredefinedConfigurations;
@@ -41,10 +42,10 @@ namespace Microex.All.EntityFramework
                     
                     var context = services.GetRequiredService<TContext>();
                     context.Database.Migrate();
-                    context.EnsureIdentityServerSeedData(new[] { ClientConfiguration.LocalServer },
-                        ResourceConfiguration.IdentityResources,
-                        ResourceConfiguration.ApiResources,
-                        IdentityConfiguration.UserRoles);
+                    context.EnsureIdentityServerSeedData(new[] { ClientPredefinedConfiguration.LocalServer },
+                        ResourcePredefinedConfiguration.IdentityResources,
+                        ResourcePredefinedConfiguration.ApiResources,
+                        IdentityPredefinedConfiguration.UserRoles);
                     logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
                 }
                 catch (Exception e)
@@ -64,23 +65,10 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="serviceCollection"></param>
         /// <returns></returns>
-        public static IServiceCollection AddRepository<TContext>(this IServiceCollection serviceCollection) where TContext : DbContext,IUnitOfWork
+        public static IServiceCollection AddUnitOfWork<TContext>(this IServiceCollection serviceCollection) where TContext : DbContext
         {
-            var dbSetsPropertyInfos = typeof(TContext).GetProperties().Where(x => x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>)).ToList();
-            foreach (var table in dbSetsPropertyInfos)
-            {
-                var entityType = table.PropertyType.GenericTypeArguments[0];
-                var contextType = typeof(TContext);
-                var keyType = entityType?.GetProperties().FirstOrDefault(x => x.GetCustomAttributes(typeof(KeyAttribute), true).Any() || x.Name == "Id" || x.Name == $"{x.Name}Id")?.PropertyType;
-                if (keyType == null)
-                {
-                    continue;
-                }
-                serviceCollection.TryAddScoped(
-                    typeof(IRepository<>).MakeGenericType(table.PropertyType.GenericTypeArguments), typeof(BasicRepository<,,>).MakeGenericType(entityType, contextType, keyType));
-
-            }
-
+            //单例的uow,保证事务完整性
+            serviceCollection.AddSingleton<IUnitOfWork<TContext>>(provider => provider.GetRequiredService<TContext>() as UnitOfWork<TContext>);
             return serviceCollection;
         }
         public static IQueryable<T> PageBy<T, TKey>(this IQueryable<T> query, Expression<Func<T, TKey>> orderBy, int page, int pageSize, bool orderByDescending = true)
@@ -121,6 +109,29 @@ namespace Microex.All.EntityFramework
                 var entityType = table.PropertyType.GenericTypeArguments[0];
                 modelBuilder.Entity(entityType, ConfigIEntity);
             }
+        }
+
+        public static async Task<PagedList<TEntity>> ToPagedListAsync<TEntity,TKey>(this IQueryable<TEntity> rawData,Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10) where TEntity: class, IEntity<TKey>
+        {
+            var pagedList = new PagedList<TEntity>();
+            IQueryable<TEntity> query = rawData;
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            pagedList.TotalCount = await query.CountAsync();
+
+            if (orderBy != null)
+            {
+                query = query.PageBy(orderBy, page, pageSize);
+
+            }
+            List<TEntity> data = await query
+                .ToListAsync();
+            pagedList.Data.AddRange(data);
+            pagedList.PageSize = pageSize;
+            return pagedList;
         }
     }
 }

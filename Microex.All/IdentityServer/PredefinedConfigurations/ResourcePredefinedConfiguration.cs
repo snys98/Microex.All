@@ -4,7 +4,7 @@ using IdentityServer4.Models;
 
 namespace Microex.All.IdentityServer.PredefinedConfigurations
 {
-    public static class ResourceConfiguration
+    public static class ResourcePredefinedConfiguration
     {
         public static IEnumerable<IdentityResource> IdentityResources=> new[]
         {

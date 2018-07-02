@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Microex.All.Common
 {
-    public abstract class Enumeration<T> : IComparable where T : IComparable
+    public abstract class Enumeration<T> : ValueObject,IComparable where T : IComparable
     {
         public string Name { get; }
         public T Value { get; }
@@ -26,12 +26,19 @@ namespace Microex.All.Common
             return value.Value;
         }
 
-        public static TImplemetions Parse<TImplemetions>(T value) where TImplemetions:Enumeration<T>, new()
+        protected override IEnumerable<object> GetAtomicValues()
         {
-            return Enumeration<T>.GetAll<TImplemetions>().First();
+            yield return Name;
+            yield return Value;
         }
 
-        public static IEnumerable<TImplemention> GetAll<TImplemention>() where TImplemention : Enumeration<T>,new ()
+        public static bool TryParse<TImplemetions>(T value,out TImplemetions result) where TImplemetions:Enumeration<T>
+        {
+            result = Enumeration<T>.GetAll<TImplemetions>().FirstOrDefault(x => x.Value.CompareTo(value) == 0);
+            return result != default(TImplemetions);
+        }
+
+        public static IEnumerable<TImplemention> GetAll<TImplemention>() where TImplemention : Enumeration<T>
         {
             var type = typeof(TImplemention);
             var typeInfo = type.GetTypeInfo();
@@ -40,8 +47,7 @@ namespace Microex.All.Common
                                                       BindingFlags.DeclaredOnly);
             foreach (var info in fields)
             {
-                var instance = new TImplemention();
-                if (info.GetValue(instance) is TImplemention locatedValue)
+                if (info.GetValue(default(TImplemention)) is TImplemention locatedValue)
                 {
                     yield return locatedValue;
                 }

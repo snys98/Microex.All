@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Microex.All.IdentityServer.PredefinedConfigurations
 {
-    public static class IdentityConfiguration
+    public static class IdentityPredefinedConfiguration
     {
         public const string AdministrationPolicy = "RequireAdministratorRole";
         public const string AdministrationRoleName = "Administrator";

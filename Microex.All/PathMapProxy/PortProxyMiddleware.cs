@@ -72,7 +72,7 @@ namespace Microex.All.PathMapProxy
             }
             request.Headers.Host = $"localhost:{curPort}";
             string uriString =
-                $"{ context.Request.Scheme}://localhost:{ curPort}{ context.Request.PathBase}{ context.Request.Path}{ context.Request.QueryString}";
+                $"http://localhost:{ curPort}{ context.Request.PathBase}{ context.Request.Path}{ context.Request.QueryString}";
             request.RequestUri = new Uri(uriString);
             request.Method = new HttpMethod(context.Request.Method);
             HttpResponseMessage responseMessage = null;

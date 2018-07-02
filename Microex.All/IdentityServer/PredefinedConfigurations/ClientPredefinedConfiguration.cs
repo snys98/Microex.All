@@ -5,7 +5,7 @@ using IdentityServer4.Models;
 namespace Microex.All.IdentityServer.PredefinedConfigurations
 
 {
-    public static class ClientConfiguration
+    public static class ClientPredefinedConfiguration
     {
         public static Client LocalServer => new Client
         {
