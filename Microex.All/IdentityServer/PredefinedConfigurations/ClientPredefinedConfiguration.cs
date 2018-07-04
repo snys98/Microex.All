@@ -7,17 +7,17 @@ namespace Microex.All.IdentityServer.PredefinedConfigurations
 {
     public static class ClientPredefinedConfiguration
     {
-        public static Client LocalServer => new Client
+        public static Client AdminManageClient => new Client
         {
-            ClientId = nameof(LocalServer),
-            ClientName = nameof(LocalServer),
+            ClientId = nameof(AdminManageClient),
+            ClientName = nameof(AdminManageClient),
             AllowedGrantTypes = GrantTypes.Hybrid,
 
             AllowAccessTokensViaBrowser = true,
             RequireConsent = false,
             ClientSecrets =
                 {
-                    new Secret(nameof(LocalServer).Sha256())
+                    new Secret(nameof(AdminManageClient).Sha256())
                 },
 
             RedirectUris = { "*" },

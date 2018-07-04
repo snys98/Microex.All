@@ -42,9 +42,9 @@ namespace Microex.All.EntityFramework
                     
                     var context = services.GetRequiredService<TContext>();
                     context.Database.Migrate();
-                    context.EnsureIdentityServerSeedData(new[] { ClientPredefinedConfiguration.LocalServer },
+                    context.EnsureIdentityServerSeedData(new[] { ClientPredefinedConfiguration.AdminManageClient },
                         ResourcePredefinedConfiguration.IdentityResources,
-                        ResourcePredefinedConfiguration.ApiResources,
+                        new ApiResource[] {/*ResourcePredefinedConfiguration.AdminManageResource*/},
                         IdentityPredefinedConfiguration.UserRoles);
                     logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
                 }
