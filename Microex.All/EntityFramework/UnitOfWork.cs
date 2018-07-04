@@ -15,11 +15,12 @@ namespace Microex.All.EntityFramework
         private readonly IMediator _mediator;
         private readonly IServiceProvider _serviceProvider;
 
-        public UnitOfWork(IMediator mediator,IServiceProvider serviceProvider)
+        public UnitOfWork(IServiceProvider serviceProvider)
         {
-            _mediator = mediator;
-            _serviceProvider = serviceProvider;
-            DbContext = serviceProvider.GetRequiredService<TDbContext>();
+            var uowScope = serviceProvider.CreateScope();
+            _serviceProvider = uowScope.ServiceProvider;
+            _mediator = _serviceProvider.GetRequiredService<IMediator>();
+            DbContext = _serviceProvider.GetRequiredService<TDbContext>();
         }
 
         

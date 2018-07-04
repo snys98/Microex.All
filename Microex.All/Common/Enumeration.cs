@@ -7,14 +7,8 @@ namespace Microex.All.Common
 {
     public abstract class Enumeration<T> : ValueObject,IComparable where T : IComparable
     {
-        public string Name { get; }
-        public T Value { get; }
-
-        protected Enumeration(T value, string name)
-        {
-            Value = value;
-            Name = name;
-        }
+        public abstract string Name { get; set; }
+        public abstract T Value { get; set; }
 
         public override string ToString()
         {
@@ -36,6 +30,12 @@ namespace Microex.All.Common
         {
             result = Enumeration<T>.GetAll<TImplemetions>().FirstOrDefault(x => x.Value.CompareTo(value) == 0);
             return result != default(TImplemetions);
+        }
+
+        public static TImplemetions Parse<TImplemetions>(T value) where TImplemetions : Enumeration<T>
+        {
+            var result = Enumeration<T>.GetAll<TImplemetions>().First(x => x.Value.CompareTo(value) == 0);
+            return result;
         }
 
         public static IEnumerable<TImplemention> GetAll<TImplemention>() where TImplemention : Enumeration<T>

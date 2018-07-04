@@ -68,7 +68,7 @@ namespace Microex.All.EntityFramework
         public static IServiceCollection AddUnitOfWork<TContext>(this IServiceCollection serviceCollection) where TContext : DbContext
         {
             //单例的uow,保证事务完整性
-            serviceCollection.AddSingleton<IUnitOfWork<TContext>>(provider => provider.GetRequiredService<TContext>() as UnitOfWork<TContext>);
+            serviceCollection.AddSingleton<IUnitOfWork<TContext>,UnitOfWork<TContext>>();
             return serviceCollection;
         }
         public static IQueryable<T> PageBy<T, TKey>(this IQueryable<T> query, Expression<Func<T, TKey>> orderBy, int page, int pageSize, bool orderByDescending = true)
@@ -82,33 +82,6 @@ namespace Microex.All.EntityFramework
             query = orderByDescending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
 
             return query.Skip((page - 1) * pageSize).Take(pageSize);
-        }
-
-        /// <summary>
-        /// Configures IEntity.
-        /// </summary>
-        /// <param name="modelBuilder">The model builder.</param>
-        public static void ConfigIEntities<TContext>(this ModelBuilder modelBuilder) where TContext : DbContext
-        {
-            var dbSets = typeof(TContext).GetProperties()
-                .Where(x => x.PropertyType.IsGenericType &&
-                            x.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>) &&
-                            x.PropertyType.GenericTypeArguments[0].GetInterface(nameof(IEntity)) != null)
-                .ToList();
-
-            void ConfigIEntity(EntityTypeBuilder options)
-            {
-                options.HasKey(nameof(IEntity.Id));
-                options.Property<string>(nameof(IEntity.Id)).HasValueGenerator<PrettyStringGuidGenerator>();
-                options.Property<DateTime>(nameof(IEntity.CreateTime)).ValueGeneratedOnAdd();
-                options.Property<DateTime>(nameof(IEntity.LastModifyTime)).ValueGeneratedOnUpdate();
-            }
-
-            foreach (var table in dbSets)
-            {
-                var entityType = table.PropertyType.GenericTypeArguments[0];
-                modelBuilder.Entity(entityType, ConfigIEntity);
-            }
         }
 
         public static async Task<PagedList<TEntity>> ToPagedListAsync<TEntity,TKey>(this IQueryable<TEntity> rawData,Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10) where TEntity: class, IEntity<TKey>

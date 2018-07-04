@@ -17,7 +17,6 @@ namespace Microex.All.EntityFramework
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ConfigIEntities<TDbContext>();
             base.OnModelCreating(modelBuilder);
         }
 
