@@ -84,7 +84,7 @@ namespace Microex.All.EntityFramework
             return query.Skip((page - 1) * pageSize).Take(pageSize);
         }
 
-        public static async Task<PagedList<TEntity>> ToPagedListAsync<TEntity,TKey>(this IQueryable<TEntity> rawData,Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10) where TEntity: class, IEntity<TKey>
+        public static async Task<PagedList<TEntity>> ToPagedListAsync<TEntity,TKey>(this IQueryable<TEntity> rawData,Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10,bool orderByDescending = true) where TEntity: class, IEntity<TKey>
         {
             var pagedList = new PagedList<TEntity>();
             IQueryable<TEntity> query = rawData;
@@ -97,7 +97,7 @@ namespace Microex.All.EntityFramework
 
             if (orderBy != null)
             {
-                query = query.PageBy(orderBy, page, pageSize);
+                query = query.PageBy(orderBy, page, pageSize,orderByDescending);
 
             }
             List<TEntity> data = await query
@@ -105,6 +105,10 @@ namespace Microex.All.EntityFramework
             pagedList.Data.AddRange(data);
             pagedList.PageSize = pageSize;
             return pagedList;
+        }
+        public static async Task<PagedList<TEntity>> ToPagedListAsync<TEntity>(this IQueryable<TEntity> rawData, Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10, bool orderByDescending = true) where TEntity : class, IEntity
+        {
+            return await ToPagedListAsync<TEntity, string>(rawData, predicate, orderBy, page, pageSize, orderByDescending = true);
         }
     }
 }
