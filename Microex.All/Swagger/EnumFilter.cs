@@ -21,18 +21,48 @@ namespace Microex.All.Swagger
 
             if (context == null)
                 throw new ArgumentNullException("context");
-
-            if (context.SystemType.IsEnum)
+            var paramType = context.SystemType;
+            if (paramType.IsEnum)
+            {
+                
                 model.Extensions.Add("x-ms-enum", new
                 {
-                    name = context.SystemType.Name,
+                    name = paramType.Name,
                     modelAsString = false,
-                    values = context.SystemType.GetFields(BindingFlags.Static|BindingFlags.Public).Select(x=>new
+                    values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
                     {
-                        name=x.Name,
-                        value= x.GetCustomAttribute<DisplayNameAttribute>().DisplayName
+                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        return new
+                        {
+                            name = x.Name,
+                            value = display.Name,
+                            description = display.Description
+                        };
                     })
                 });
+            }
+
+            if ((paramType.IsGenericType &&
+                 paramType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
+                 paramType.GetGenericArguments()[0].IsEnum))
+            {
+                var realType = paramType.GetGenericArguments()[0];
+                model.Extensions.Add("x-ms-enum", new
+                {
+                    name = realType.Name,
+                    modelAsString = false,
+                    values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
+                    {
+                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        return new
+                        {
+                            name = x.Name,
+                            value = display.Name,
+                            description = display.Description
+                        };
+                    })
+                });
+            }
         }
     }
 
@@ -49,35 +79,39 @@ namespace Microex.All.Swagger
             var paramType = context.ParameterInfo.ParameterType;
             if (paramType.IsEnum && paramType.GetCustomAttribute<DisplayAttribute>() != null)
             {
-                var display = paramType.GetCustomAttribute<DisplayAttribute>();
                 parameter.Extensions.Add("x-ms-enum", new
                 {
                     name = paramType.Name,
                     modelAsString = false,
-                    values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => new
-                    {
-                        name = x.Name,
-                        value = display.Name,
-                        description = display.Description
+                    values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => {
+                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        return new
+                        {
+                            name = x.Name,
+                            value = display.Name,
+                            description = display.Description
+                        };
                     })
                 });
             }
 
             if ((paramType.IsGenericType &&
                  paramType.GetGenericTypeDefinition() == typeof(Nullable<>) &&
-                 paramType.GetGenericArguments()[0].IsEnum) && paramType.GetGenericArguments()[0].GetCustomAttribute<DisplayAttribute>() != null)
+                 paramType.GetGenericArguments()[0].IsEnum))
             {
                 var realType = paramType.GetGenericArguments()[0];
-                var display = realType.GetCustomAttribute<DisplayAttribute>();
                 parameter.Extensions.Add("x-ms-enum", new
                 {
                     name = realType.Name,
                     modelAsString = false,
-                    values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => new
-                    {
-                        name = x.Name,
-                        value = display.Name,
-                        description = display.Description
+                    values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => {
+                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        return new
+                        {
+                            name = x.Name,
+                            value = display.Name,
+                            description = display.Description
+                        };
                     })
                 });
             }
