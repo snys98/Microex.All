@@ -65,7 +65,7 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="serviceCollection"></param>
         /// <returns></returns>
-        public static IServiceCollection AddUnitOfWork<TContext>(this IServiceCollection serviceCollection) where TContext : DbContext
+        public static IServiceCollection AddUnitOfWork<TContext>(this IServiceCollection serviceCollection) where TContext : IntegratedDbContext
         {
             //单例的uow,保证事务完整性
             serviceCollection.AddSingleton<IUnitOfWork<TContext>,UnitOfWork<TContext>>();

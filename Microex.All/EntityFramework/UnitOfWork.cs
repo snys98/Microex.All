@@ -7,10 +7,11 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microex.All.EntityFramework
 {
-    public class UnitOfWork<TDbContext> : IUnitOfWork<TDbContext> where TDbContext : DbContext
+    public class UnitOfWork<TDbContext> : IUnitOfWork<TDbContext> where TDbContext : IntegratedDbContext
     {
         private readonly IMediator _mediator;
         private readonly IServiceProvider _serviceProvider;
@@ -35,12 +36,27 @@ namespace Microex.All.EntityFramework
                 await _mediator.Publish(domainEvent);
                 DomainEvents.Remove(domainEvent);
             }
-
-            return await (DbContext as DbContext).SaveChangesAsync();
+            return await DbContext.UowSaveChangesAsync().ContinueWith<int>(saveTask =>
+            {
+                if (saveTask.IsCompleted&& !saveTask.IsFaulted)
+                {
+                    this.DiscardChanges();
+                    return saveTask.Result;
+                }
+                this.DiscardChanges();
+                //_logger.LogCritical($"save failed with localdata:{{0}} {Environment.NewLine} domain events:{{1}}", DomainEvents);
+                if (saveTask.Exception != null)
+                {
+                    throw saveTask.Exception;
+                }
+                return saveTask.Result;
+            });
         }
 
         public void DiscardChanges()
         {
+            //无论保存成功失败,都清除local内的临时值
+            this.DbContext.ChangeTracker.AcceptAllChanges();
             this.DbContext.Dispose();
             this.DomainEvents.Clear();
             this.DbContext = _serviceProvider.GetRequiredService<TDbContext>();

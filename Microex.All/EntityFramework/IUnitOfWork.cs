@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Microex.All.EntityFramework
 {
-    public interface IUnitOfWork<TDbContext> where TDbContext:DbContext
+    public interface IUnitOfWork<TDbContext> where TDbContext:IntegratedDbContext
     {
         List<INotification> DomainEvents { get; }
         TDbContext DbContext { get; }
