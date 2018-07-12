@@ -10,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microex.All.IdentityServer
 {
-    public class WildcardDomainRedirectUriValidator:StrictRedirectUriValidator
+    public class RegexRedirectUriValidator:StrictRedirectUriValidator
     {
         private readonly IHostingEnvironment _env;
 
@@ -19,24 +19,20 @@ namespace Microex.All.IdentityServer
             return wildcardPattern.Replace(".", "\\.").Replace("*", ".+");
         }
 
-        public WildcardDomainRedirectUriValidator(IHostingEnvironment env)
+        public RegexRedirectUriValidator(IHostingEnvironment env)
         {
             _env = env;
         }
 
         public override Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
         {
-            if (client.PostLogoutRedirectUris.Any(x => x == "*"))
-            {
-                return Task.FromResult(true);
-            }
-
             if (_env.IsDevelopment())
             {
                 return Task.FromResult(true);
             }
-            var host = new Uri(requestedUri).Host;
-            return Task.FromResult(client.PostLogoutRedirectUris.Any(x => new Regex($"^{Wildcard2Regex(x)}$").IsMatch(host)));
+
+            var regexs = client.RedirectUris.Select(x=>new Regex(x));
+            return Task.FromResult(regexs.All(x=>x.IsMatch(requestedUri)));
         }
 
         public override Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
