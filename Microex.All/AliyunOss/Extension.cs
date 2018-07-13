@@ -20,6 +20,7 @@ namespace Microex.All.AliyunOss
         {
             var options = new AliyunOssOptions();
             optionsAction.Invoke(options);
+            builder.AddTransient<AliyunOssOptions>((_)=> options);
             builder.AddSingleton<AliyunOssClient>((provider => new AliyunOssClient(options)));
             return builder;
         }
