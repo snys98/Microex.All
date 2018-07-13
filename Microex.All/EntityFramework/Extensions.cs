@@ -55,7 +55,35 @@ namespace Microex.All.EntityFramework
                 }
                 
             }
+            return host;
+        }
 
+        /// <summary>
+        /// 用于自动迁移dbcontext
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        public static IWebHost EnsureMigrations<TContext>(this IWebHost host) where TContext : DbContext
+        {
+            using (var scope = host.Services.CreateScope())
+            {//只在本区间内有效
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<TContext>>();
+                try
+                {
+
+                    var context = services.GetRequiredService<TContext>();
+                    context.Database.Migrate();
+                    logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
+                }
+                catch (Exception e)
+                {
+                    logger.LogCritical(e, "数据库自动migration失败");
+                    throw;
+                }
+
+            }
             return host;
         }
 
