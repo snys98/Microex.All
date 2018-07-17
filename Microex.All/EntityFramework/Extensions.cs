@@ -31,7 +31,7 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="host"></param>
         /// <returns></returns>
-        public static IWebHost EnsurePredefinedIdentityServerConfigs<TContext>(this IWebHost host) where TContext : IdentityServerDbContext
+        public static IWebHost EnsurePredefinedIdentityServerConfigs<TContext>(this IWebHost host, Action<TContext> seedAction = null) where TContext : IdentityServerDbContext
         {
             using (var scope = host.Services.CreateScope())
             {//只在本区间内有效
@@ -42,10 +42,11 @@ namespace Microex.All.EntityFramework
                     
                     var context = services.GetRequiredService<TContext>();
                     context.Database.Migrate();
-                    context.EnsureIdentityServerSeedData(new[] { ClientPredefinedConfiguration.AdminManageClient, ClientPredefinedConfiguration.YourPen },
+                    context.EnsureIdentityServerSeedData(new[] { ClientPredefinedConfiguration.AdminManageClient },
                         ResourcePredefinedConfiguration.IdentityResources,
-                        new ApiResource[] {ResourcePredefinedConfiguration.YourPenApi},
+                        new ApiResource[] {},
                         IdentityPredefinedConfiguration.UserRoles);
+                    seedAction?.Invoke(context);
                     logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
                 }
                 catch (Exception e)
@@ -64,7 +65,7 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="host"></param>
         /// <returns></returns>
-        public static IWebHost EnsureMigrations<TContext>(this IWebHost host) where TContext : DbContext
+        public static IWebHost EnsureMigrations<TContext>(this IWebHost host,Action<TContext> seedAction = null) where TContext : DbContext
         {
             using (var scope = host.Services.CreateScope())
             {//只在本区间内有效
@@ -75,6 +76,7 @@ namespace Microex.All.EntityFramework
 
                     var context = services.GetRequiredService<TContext>();
                     context.Database.Migrate();
+                    seedAction?.Invoke(context);
                     logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
                 }
                 catch (Exception e)
