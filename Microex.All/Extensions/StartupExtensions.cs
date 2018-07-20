@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,6 +24,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
@@ -61,18 +64,18 @@ namespace Microex.All.Extensions
         {
             builder.AddJsonOptions(jsonOptions =>
             {
-                //jsonOptions.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                //jsonOptions.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
-                //jsonOptions.SerializerSettings.TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple;
-                //jsonOptions.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
-                //jsonOptions.SerializerSettings.Error = (sender, args) =>
-                //{
-                //    args.ErrorContext.Handled = true;
-                //};
-                //jsonOptions.SerializerSettings.Converters = (IList<JsonConverter>)new List<JsonConverter>()
-                //{
-                //    (JsonConverter) new StringEnumConverter()
-                //};
+                jsonOptions.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                jsonOptions.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
+                jsonOptions.SerializerSettings.TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple;
+                jsonOptions.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+                jsonOptions.SerializerSettings.Error = (sender, args) =>
+                {
+                    args.ErrorContext.Handled = true;
+                };
+                jsonOptions.SerializerSettings.Converters = (IList<JsonConverter>)new List<JsonConverter>()
+                {
+                    (JsonConverter) new StringEnumConverter()
+                };
                 foreach (var propertyInfo in jsonOptions.SerializerSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.SetProperty))
                 {
                     var value = propertyInfo.GetValue(Json.DefaultSerializeSettings);

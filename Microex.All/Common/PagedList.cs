@@ -14,6 +14,7 @@ namespace Microex.All.Common
         public List<T> Data { get; }
 
         public int TotalCount { get; set; }
+        public int TotalPage => this.TotalCount / this.PageSize + (this.TotalCount % this.PageSize == 0 ? 0 : 1);
 
         public int PageSize { get; set; }
 
@@ -22,7 +23,7 @@ namespace Microex.All.Common
             var result =  new PagedList<TTarget>()
             {
                 PageSize = this.PageSize,
-                TotalCount = this.TotalCount
+                TotalCount = this.TotalCount,
             };
             result.Data.AddRange(this.Data.Select(changeExpression).ToArray());
             return result;

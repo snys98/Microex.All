@@ -16,7 +16,6 @@ namespace Microex.All.Extensions
             {
                 new StringEnumConverter()
             },
-            Formatting = Formatting.Indented
         };
 
         public static JsonSerializerSettings IgnoreErrorSerializeSettings { get; set; } = new JsonSerializerSettings()
@@ -33,10 +32,9 @@ namespace Microex.All.Extensions
             {
                 new StringEnumConverter()
             },
-            Formatting = Formatting.Indented
         };
 
-        public static string ToJson(this object @this, bool ignoreError = true,bool formated = false)
+        public static string ToJson(this object @this, bool ignoreError = true)
         {
             if (ignoreError)
             {

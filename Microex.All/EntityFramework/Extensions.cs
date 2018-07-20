@@ -98,7 +98,7 @@ namespace Microex.All.EntityFramework
         public static IServiceCollection AddUnitOfWork<TContext>(this IServiceCollection serviceCollection) where TContext : IntegratedDbContext
         {
             //单例的uow,保证事务完整性
-            serviceCollection.AddSingleton<IUnitOfWork<TContext>,UnitOfWork<TContext>>();
+            serviceCollection.AddSingleton<UnitOfWork<TContext>>();
             return serviceCollection;
         }
         public static IQueryable<T> PageBy<T, TKey>(this IQueryable<T> query, Expression<Func<T, TKey>> orderBy, int page, int pageSize, bool orderByDescending = true)

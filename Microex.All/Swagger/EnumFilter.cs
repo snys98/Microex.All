@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using MoreLinq;
@@ -31,12 +32,12 @@ namespace Microex.All.Swagger
                     modelAsString = false,
                     values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
                     {
-                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
                         return new
                         {
                             name = x.Name,
-                            value = display.Name,
-                            description = display.Description
+                            value = enumMemberAttribute.Value,
+                            description = enumMemberAttribute.Value
                         };
                     })
                 });
@@ -53,12 +54,12 @@ namespace Microex.All.Swagger
                     modelAsString = false,
                     values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
                     {
-                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
                         return new
                         {
                             name = x.Name,
-                            value = display.Name,
-                            description = display.Description
+                            value = enumMemberAttribute.Value,
+                            description = enumMemberAttribute.Value
                         };
                     })
                 });
@@ -77,19 +78,19 @@ namespace Microex.All.Swagger
                 throw new ArgumentNullException("context");
 
             var paramType = context.ParameterInfo.ParameterType;
-            if (paramType.IsEnum && paramType.GetCustomAttribute<DisplayAttribute>() != null)
+            if (paramType.IsEnum && paramType.GetCustomAttribute<EnumMemberAttribute>() != null)
             {
                 parameter.Extensions.Add("x-ms-enum", new
                 {
                     name = paramType.Name,
                     modelAsString = false,
                     values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => {
-                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
                         return new
                         {
                             name = x.Name,
-                            value = display.Name,
-                            description = display.Description
+                            value = enumMemberAttribute.Value,
+                            description = enumMemberAttribute.Value
                         };
                     })
                 });
@@ -105,12 +106,12 @@ namespace Microex.All.Swagger
                     name = realType.Name,
                     modelAsString = false,
                     values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => {
-                        var display = x.GetCustomAttribute<DisplayAttribute>();
+                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
                         return new
                         {
                             name = x.Name,
-                            value = display.Name,
-                            description = display.Description
+                            value = enumMemberAttribute.Value,
+                            description = enumMemberAttribute.Value
                         };
                     })
                 });

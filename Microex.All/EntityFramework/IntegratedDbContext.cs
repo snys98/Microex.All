@@ -28,7 +28,7 @@ namespace Microex.All.EntityFramework
         //}
         public Task<int> UowSaveChangesAsync(bool acceptAllChangesOnSuccess = true, CancellationToken cancellationToken = new CancellationToken(),[CallerMemberName]string callMemberName = null)
         {
-            if (callMemberName == nameof(IUnitOfWork<IntegratedDbContext>.SaveChangesAsync))
+            if (callMemberName == nameof(UnitOfWork<IntegratedDbContext>.SaveChangesAsync))
             {
                 return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
             }

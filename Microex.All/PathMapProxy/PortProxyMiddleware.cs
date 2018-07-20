@@ -100,7 +100,7 @@ namespace Microex.All.PathMapProxy
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, "代理访问调用失败,request:{request}", request.ToJson(formated: true));
+                _logger.LogWarning(e, "代理访问调用失败,request:{request}", request.ToJson());
                 await next.Invoke(context);
             }
             finally
