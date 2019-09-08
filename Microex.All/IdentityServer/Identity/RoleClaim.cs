@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System;
+using Microsoft.AspNetCore.Identity;
 
 namespace Microex.All.IdentityServer.Identity
 {
-    public class RoleClaim : IdentityRoleClaim<int>
+    public class RoleClaim : IdentityRoleClaim<Guid>
     {
         
     }

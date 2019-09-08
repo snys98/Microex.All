@@ -17,7 +17,7 @@ using UserClaim = Microex.All.IdentityServer.Identity.UserClaim;
 
 namespace Microex.All.IdentityServer
 {
-    public class IdentityServerDbContext: IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>,
+    public class IdentityServerDbContext: IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>,
         IConfigurationDbContext, IPersistedGrantDbContext
     {
         protected readonly ConfigurationStoreOptions _configurationStoreOptions = new ConfigurationStoreOptions();

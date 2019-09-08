@@ -30,7 +30,7 @@ namespace Microex.All.IdentityServer
 
             if (!context.IdentityResources.Any())
             {
-
+                
                 foreach (var resource in identityResources)
                 {
                     context.IdentityResources.Add(resource.ToEntity());

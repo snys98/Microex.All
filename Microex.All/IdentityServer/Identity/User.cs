@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System;
+using Microsoft.AspNetCore.Identity;
 
 namespace Microex.All.IdentityServer.Identity
 {
-	public class User : IdentityUser<int>
+	public sealed class User : IdentityUser<Guid>
 	{
-		
+        public User()
+        {
+            Id = SequentialGuid.SequentialGuidGenerator.Instance.NewGuid(DateTime.Now);
+        }
 	}
 }
