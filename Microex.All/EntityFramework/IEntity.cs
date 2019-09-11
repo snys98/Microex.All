@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace Microex.All.EntityFramework
 {
-    public interface IEntity<TKey>
+    public interface IEntity
     {
         /// <summary>
         /// Id
         /// </summary>
-        TKey Id { get; }
+        string Id { get; }
         /// <summary>
         /// 创建时间
         /// </summary>
@@ -22,10 +22,5 @@ namespace Microex.All.EntityFramework
         /// 最后更新时间
         /// </summary>
         DateTime LastModifyTime { get; }
-    }
-
-    public interface IEntity:IEntity<string>
-    {
-        
     }
 }

@@ -12,14 +12,14 @@ namespace Microex.All.IdentityServer
 {
     public class RegexRedirectUriValidator:StrictRedirectUriValidator
     {
-        private readonly IHostingEnvironment _env;
+        private readonly IHostEnvironment _env;
 
         private string Wildcard2Regex(string wildcardPattern)
         {
             return wildcardPattern.Replace(".", "\\.").Replace("*", ".+");
         }
 
-        public RegexRedirectUriValidator(IHostingEnvironment env)
+        public RegexRedirectUriValidator(IHostEnvironment env)
         {
             _env = env;
         }

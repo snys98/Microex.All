@@ -76,7 +76,7 @@ namespace Microex.All.ElasticSearch.Zero.Logging.Elasticsearch
             {
                 if (!_options.OverwriteTemplate)
                 {
-                    var templateExistsResponse = _client.IndicesExistsTemplateForAll<DynamicResponse>(_templateName);
+                    var templateExistsResponse = _client.Indices.TemplateExistsForAll<DynamicResponse>(_templateName);
                     if (templateExistsResponse.HttpStatusCode == 200)
                     {
                         TemplateRegistrationSuccess = true;
@@ -85,7 +85,7 @@ namespace Microex.All.ElasticSearch.Zero.Logging.Elasticsearch
                     }
                 }
 
-                var result = _client.IndicesPutTemplateForAll<DynamicResponse>(_templateName, GetTempatePostData());
+                var result = _client.Indices.PutTemplateForAll<DynamicResponse>(_templateName, GetTempatePostData());
 
                 if (!result.Success)
                 {

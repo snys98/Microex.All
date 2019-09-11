@@ -14,9 +14,11 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Microex.All.MicroService
 {
@@ -56,9 +58,9 @@ namespace Microex.All.MicroService
         public static IApplicationBuilder UseConsulServiceDiscoveryAndHealthCheck(this IApplicationBuilder builder,
             ServiceDiscoveryAndHealthCheckOptions options,
             IConsulClient consulClient,
-            IApplicationLifetime applicationLifetime,
+            IHostApplicationLifetime applicationLifetime,
             ILogger<IStartup> logger,
-            IHostingEnvironment env,
+            IHostEnvironment env,
             string iisExternalPort)
         {
             IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
@@ -148,7 +150,7 @@ namespace Microex.All.MicroService
             return builder.ConfigureAppConfiguration(
                 (Action<WebHostBuilderContext, IConfigurationBuilder>)((hostingContext, config) =>
                 {
-                    IHostingEnvironment hostingEnvironment = hostingContext.HostingEnvironment;
+                    IHostEnvironment hostingEnvironment = hostingContext.HostingEnvironment;
                     //ocelot相关配置
                     config.AddJsonFile("ocelot.json", true, true)
                         .AddJsonFile(

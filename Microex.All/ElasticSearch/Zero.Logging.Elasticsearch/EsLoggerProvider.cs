@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Microex.All.Common;
 using Microex.All.ElasticSearch.Zero.Logging.Commom;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,11 +16,11 @@ namespace Microex.All.ElasticSearch.Zero.Logging.Elasticsearch
     [ProviderAlias("Elasticsearch")]
     public class EsLoggerProvider : BatchingLoggerProvider
     {
-        private readonly IHostingEnvironment _env;
+        private readonly IHostEnvironment _env;
         private static string _serverIp;
         private readonly ElasticsearchHelper _esHelper;
 
-        public EsLoggerProvider(IOptionsMonitor<EsLoggerOptions> options,IHostingEnvironment env) : base(options)
+        public EsLoggerProvider(IOptionsMonitor<EsLoggerOptions> options,IHostEnvironment env) : base(options)
         {
             _env = env;
             if (_serverIp == null)

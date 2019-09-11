@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 using IdentityServer4.Extensions;
 using Microex.All.Extensions;
 using Microex.All.UEditor.Handlers;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Hosting;
 
 namespace Microex.All.UEditor
 {
     public class UEditorMiddleware : IMiddleware
     {
-        private readonly IHostingEnvironment _env;
+        private readonly IHostEnvironment _env;
         private UEditorOptions _options;
         private readonly IMemoryCache _memoryCache;
 
-        public UEditorMiddleware(IHostingEnvironment env, UEditorOptions options,IMemoryCache memoryCache)
+        public UEditorMiddleware(IHostEnvironment env, UEditorOptions options,IMemoryCache memoryCache)
         {
             _env = env;
             this._options = options;
@@ -35,7 +35,7 @@ namespace Microex.All.UEditor
             }
 
             _options.JsonConfig = jsonConfig;
-            Handler.WebRootPath = _env.WebRootPath;
+            Handler.WebRootPath = _env.ContentRootPath;
             Handler.Config = jsonConfig;
         }
 
