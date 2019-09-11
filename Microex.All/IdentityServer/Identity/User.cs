@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Microex.All.IdentityServer.Identity
 {
-	public sealed class User : IdentityUser<Guid>
+	public sealed class User : IdentityUser
 	{
         public User()
         {
-            Id = SequentialGuid.SequentialGuidGenerator.Instance.NewGuid(DateTime.Now);
+            Id = SequentialGuid.SequentialGuidGenerator.Instance.NewGuid(DateTime.Now).ToString();
         }
 	}
 }
