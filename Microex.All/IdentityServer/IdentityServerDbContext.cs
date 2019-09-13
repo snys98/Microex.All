@@ -42,7 +42,7 @@ namespace Microex.All.IdentityServer
         protected override void OnModelCreating(ModelBuilder builder)
         {
             // lulus:配置客户端和资源相关表
-            base.OnModelCreating(builder);
+            //base.OnModelCreating(builder);
             ConfigureIdentityContext(builder);
             builder.ConfigureClientContext(_configurationStoreOptions);
             builder.ConfigurePersistedGrantContext(_operationalStoreOptions);

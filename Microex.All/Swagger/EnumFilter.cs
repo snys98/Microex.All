@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using MoreLinq;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -15,32 +17,32 @@ namespace Microex.All.Swagger
 {
     public class EnumFilter : ISchemaFilter
     {
-        public void Apply(Schema model, SchemaFilterContext context)
+        public void Apply(OpenApiSchema model, SchemaFilterContext context)
         {
             if (model == null)
                 throw new ArgumentNullException("model");
 
             if (context == null)
                 throw new ArgumentNullException("context");
-            var paramType = context.SystemType;
+            var paramType = context.Type;
             if (paramType.IsEnum)
             {
-                
-                model.Extensions.Add("x-ms-enum", new
-                {
-                    name = paramType.Name,
-                    modelAsString = false,
-                    values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
-                    {
-                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
-                        return new
-                        {
-                            name = x.Name,
-                            value = enumMemberAttribute.Value,
-                            description = enumMemberAttribute.Value
-                        };
-                    })
-                });
+
+                //model.Extensions.Add("x-ms-enum", new
+                //{
+                //    name = paramType.Name,
+                //    modelAsString = false,
+                //    values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
+                //    {
+                //        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
+                //        return new
+                //        {
+                //            name = x.Name,
+                //            value = enumMemberAttribute.Value,
+                //            description = enumMemberAttribute.Value
+                //        };
+                //    })
+                //});
             }
 
             if ((paramType.IsGenericType &&
@@ -48,28 +50,28 @@ namespace Microex.All.Swagger
                  paramType.GetGenericArguments()[0].IsEnum))
             {
                 var realType = paramType.GetGenericArguments()[0];
-                model.Extensions.Add("x-ms-enum", new
-                {
-                    name = realType.Name,
-                    modelAsString = false,
-                    values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
-                    {
-                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
-                        return new
-                        {
-                            name = x.Name,
-                            value = enumMemberAttribute.Value,
-                            description = enumMemberAttribute.Value
-                        };
-                    })
-                });
+                //model.Extensions.Add("x-ms-enum", new
+                //{
+                //    name = realType.Name,
+                //    modelAsString = false,
+                //    values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
+                //    {
+                //        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
+                //        return new
+                //        {
+                //            name = x.Name,
+                //            value = enumMemberAttribute.Value,
+                //            description = enumMemberAttribute.Value
+                //        };
+                //    })
+                //});
             }
         }
     }
 
     public class EnumParamFilter : IParameterFilter
     {
-        public void Apply(IParameter parameter, ParameterFilterContext context)
+        public void Apply(OpenApiParameter parameter, ParameterFilterContext context)
         {
             if (parameter == null)
                 throw new ArgumentNullException("parameter");
@@ -77,23 +79,28 @@ namespace Microex.All.Swagger
             if (context == null)
                 throw new ArgumentNullException("context");
 
-            var paramType = context.ParameterInfo.ParameterType;
+            var paramType = context?.ParameterInfo?.ParameterType;
+            if (paramType == default)
+            {
+                return;
+            }
             if (paramType.IsEnum && paramType.GetCustomAttribute<EnumMemberAttribute>() != null)
             {
-                parameter.Extensions.Add("x-ms-enum", new
-                {
-                    name = paramType.Name,
-                    modelAsString = false,
-                    values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => {
-                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
-                        return new
-                        {
-                            name = x.Name,
-                            value = enumMemberAttribute.Value,
-                            description = enumMemberAttribute.Value
-                        };
-                    })
-                });
+                //parameter.Extensions.Add("x-ms-enum", new
+                //{
+                //    name = paramType.Name,
+                //    modelAsString = false,
+                //    values = paramType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
+                //    {
+                //        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
+                //        return new
+                //        {
+                //            name = x.Name,
+                //            value = enumMemberAttribute.Value,
+                //            description = enumMemberAttribute.Value
+                //        };
+                //    })
+                //});
             }
 
             if ((paramType.IsGenericType &&
@@ -101,20 +108,21 @@ namespace Microex.All.Swagger
                  paramType.GetGenericArguments()[0].IsEnum))
             {
                 var realType = paramType.GetGenericArguments()[0];
-                parameter.Extensions.Add("x-ms-enum", new
-                {
-                    name = realType.Name,
-                    modelAsString = false,
-                    values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => {
-                        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
-                        return new
-                        {
-                            name = x.Name,
-                            value = enumMemberAttribute.Value,
-                            description = enumMemberAttribute.Value
-                        };
-                    })
-                });
+                //parameter.Extensions.Add("x-ms-enum", new
+                //{
+                //    name = realType.Name,
+                //    modelAsString = false,
+                //    values = realType.GetFields(BindingFlags.Static | BindingFlags.Public).Select(x =>
+                //    {
+                //        var enumMemberAttribute = x.GetCustomAttribute<EnumMemberAttribute>();
+                //        return new
+                //        {
+                //            name = x.Name,
+                //            value = enumMemberAttribute.Value,
+                //            description = enumMemberAttribute.Value
+                //        };
+                //    })
+                //});
             }
         }
     }
