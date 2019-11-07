@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IdentityServer4.EntityFramework.Interfaces;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
 using Microex.All.IdentityServer.Identity;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MoreLinq;
 
@@ -15,39 +17,39 @@ namespace Microex.All.IdentityServer
 {
     public static class Extensions
     {
-        public static void EnsureIdentityServerSeedData(this IdentityServerDbContext context,
+        public static void EnsureIdentityServerSeedData<TUser>(this IdentityServerDbContext<TUser> context,
             IEnumerable<Client> clients, IEnumerable<IdentityResource> identityResources,
             IEnumerable<ApiResource> apiResources,
-            IEnumerable<(User user, Role role)> identityConfigs)
+            IEnumerable<(TUser user, Role role)> identityConfigs) where TUser : GeexUser 
         {
-            if (!context.Clients.Any())
+            if (!(context as IConfigurationDbContext).Clients.Any())
             {
                 foreach (var client in clients)
                 {
-                    context.Clients.Add(client.ToEntity());
+                    (context as IConfigurationDbContext).Clients.Add(client.ToEntity());
                 }
             }
 
-            if (!context.IdentityResources.Any())
+            if (!(context as IConfigurationDbContext).IdentityResources.Any())
             {
-                
+
                 foreach (var resource in identityResources)
                 {
-                    context.IdentityResources.Add(resource.ToEntity());
+                    (context as IConfigurationDbContext).IdentityResources.Add(resource.ToEntity());
                 }
             }
 
-            if (!context.ApiResources.Any())
+            if (!(context as IConfigurationDbContext).ApiResources.Any())
             {
                 foreach (var resource in apiResources)
                 {
-                    context.ApiResources.Add(resource.ToEntity());
+                    (context as IConfigurationDbContext).ApiResources.Add(resource.ToEntity());
                 }
             }
 
             if (!context.Users.Any())
             {
-                foreach (var (user, role) in identityConfigs.DistinctBy(x=>x.user))
+                foreach (var (user, role) in identityConfigs.DistinctBy(x => x.user))
                 {
                     var userEntry = context.Users.Add(user);
                     context.SaveChanges();
@@ -60,7 +62,7 @@ namespace Microex.All.IdentityServer
                     context.SaveChanges();
                     role.Id = roleEntry.Entity.Id;
                 }
-                context.UserRoles.AddRange(identityConfigs.Select(x=>new UserRole(){RoleId = x.role.Id,UserId = x.user.Id}));
+                context.UserRoles.AddRange(identityConfigs.Select(x => new UserRole() { RoleId = x.role.Id, UserId = x.user.Id }));
                 //foreach (var pair in identityConfigs)
                 //{
 

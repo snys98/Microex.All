@@ -16,19 +16,19 @@ using Microsoft.Extensions.Options;
 
 namespace Microex.All.IdentityServer
 {
-    public class MicroexUserManager : UserManager<User>
+    public class MicroexUserManager<TUser> : UserManager<TUser> where TUser : GeexUser
     {
         private IServiceProvider _services;
 
-        public MicroexUserManager(IUserStore<User> store,
+        public MicroexUserManager(IUserStore<TUser> store,
             IOptions<IdentityOptions> optionsAccessor,
-            IPasswordHasher<User> passwordHasher,
-            IEnumerable<IUserValidator<User>> userValidators,
-            IEnumerable<IPasswordValidator<User>> passwordValidators,
+            IPasswordHasher<TUser> passwordHasher,
+            IEnumerable<IUserValidator<TUser>> userValidators,
+            IEnumerable<IPasswordValidator<TUser>> passwordValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
             IServiceProvider services,
-            ILogger<MicroexUserManager> logger) : base(store,
+            ILogger<MicroexUserManager<TUser>> logger) : base(store,
             optionsAccessor,
             passwordHasher,
             userValidators,
@@ -40,12 +40,12 @@ namespace Microex.All.IdentityServer
         {
             this._services = services;
         }
-        public async Task<User> FindByPhoneNumberAsync(string phone)
+        public async Task<GeexUser> FindByPhoneNumberAsync(string phone)
         {
             this.ThrowIfDisposed();
             if (phone == null)
                 throw new ArgumentNullException(nameof(phone));
-            User byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<User, bool>>)(u => u.PhoneNumber == phone), CancellationToken.None);
+            GeexUser byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<GeexUser, bool>>)(u => u.PhoneNumber == phone), CancellationToken.None);
             if ((object)byEmailAsync == null && this.Options.Stores.ProtectPersonalData)
             {
                 ILookupProtectorKeyRing service = this._services.GetService<ILookupProtectorKeyRing>();
@@ -55,7 +55,7 @@ namespace Microex.All.IdentityServer
                     foreach (string allKeyId in service.GetAllKeyIds())
                     {
                         
-                        byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<User, bool>>)(u => u.PhoneNumber == protector.Protect(allKeyId, phone)), CancellationToken.None);
+                        byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<GeexUser, bool>>)(u => u.PhoneNumber == protector.Protect(allKeyId, phone)), CancellationToken.None);
                         if ((object)byEmailAsync != null)
                             return byEmailAsync;
                     }
@@ -65,9 +65,9 @@ namespace Microex.All.IdentityServer
             return byEmailAsync;
         }
 
-        private IUserPhoneNumberStore<User> GetPhoneNumberStore()
+        private IUserPhoneNumberStore<GeexUser> GetPhoneNumberStore()
         {
-            IUserPhoneNumberStore<User> store = this.Store as IUserPhoneNumberStore<User>;
+            IUserPhoneNumberStore<GeexUser> store = this.Store as IUserPhoneNumberStore<GeexUser>;
             if (store != null)
                 return store;
             throw new NotSupportedException("StoreNotIUserPhoneNumberStore");

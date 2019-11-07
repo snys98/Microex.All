@@ -20,17 +20,12 @@ using UserClaim = Microex.All.IdentityServer.Identity.UserClaim;
 
 namespace Microex.All.IdentityServer
 {
-
-    public class IdentityServerDbContext : IdentityDbContext<User, Role, string, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>,
-        IConfigurationDbContext, IPersistedGrantDbContext
+    public class IdentityServerDbContext<TUser> : IdentityDbContext<TUser, Role, string, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>,
+        IConfigurationDbContext, IPersistedGrantDbContext where TUser : GeexUser
     {
         protected readonly ConfigurationStoreOptions _configurationStoreOptions = new ConfigurationStoreOptions();
         protected readonly OperationalStoreOptions _operationalStoreOptions = new OperationalStoreOptions();
 
-        public IdentityServerDbContext(DbContextOptions options) : base(options)
-        {
-
-        }
         public IdentityServerDbContext(DbContextOptions options,
             ConfigurationStoreOptions configurationStoreOptions,
             OperationalStoreOptions operationalStoreOptions) : base(options)
@@ -43,7 +38,7 @@ namespace Microex.All.IdentityServer
         {
             // lulus:配置客户端和资源相关表
             //base.OnModelCreating(builder);
-            ConfigureIdentityContext(builder);
+            this.ConfigureIdentityContext(builder);
             builder.ConfigureClientContext(_configurationStoreOptions);
             builder.ConfigurePersistedGrantContext(_operationalStoreOptions);
             builder.ConfigureResourcesContext(_configurationStoreOptions);
@@ -59,39 +54,37 @@ namespace Microex.All.IdentityServer
             return base.SaveChangesAsync();
         }
 
-        public DbSet<PersistedGrant> PersistedGrants { get; set; }
-        public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
+        DbSet<Client> IConfigurationDbContext.Clients { get; set; }
+        DbSet<IdentityResource> IConfigurationDbContext.IdentityResources { get; set; }
+        DbSet<ApiResource> IConfigurationDbContext.ApiResources { get; set; }
+        DbSet<PersistedGrant> IPersistedGrantDbContext.PersistedGrants { get; set; }
+        DbSet<DeviceFlowCodes> IPersistedGrantDbContext.DeviceFlowCodes { get; set; }
+        //public DbSet<ApiSecret> ApiSecrets { get; set; }
 
-        public DbSet<Client> Clients { get; set; }
-        public DbSet<IdentityResource> IdentityResources { get; set; }
-        public DbSet<ApiResource> ApiResources { get; set; }
-        public DbSet<ApiSecret> ApiSecrets { get; set; }
+        //public DbSet<ApiScope> ApiScopes { get; set; }
 
-        public DbSet<ApiScope> ApiScopes { get; set; }
+        //public DbSet<ApiScopeClaim> ApiScopeClaims { get; set; }
 
-        public DbSet<ApiScopeClaim> ApiScopeClaims { get; set; }
+        //public DbSet<IdentityClaim> IdentityClaims { get; set; }
 
-        public DbSet<IdentityClaim> IdentityClaims { get; set; }
+        //public DbSet<ApiResourceClaim> ApiResourceClaims { get; set; }
+        //public DbSet<ClientGrantType> ClientGrantTypes { get; set; }
 
-        public DbSet<ApiResourceClaim> ApiResourceClaims { get; set; }
-        public DbSet<ClientGrantType> ClientGrantTypes { get; set; }
+        //public DbSet<ClientScope> ClientScopes { get; set; }
 
-        public DbSet<ClientScope> ClientScopes { get; set; }
+        //public DbSet<ClientSecret> ClientSecrets { get; set; }
 
-        public DbSet<ClientSecret> ClientSecrets { get; set; }
+        //public DbSet<ClientPostLogoutRedirectUri> ClientPostLogoutRedirectUris { get; set; }
 
-        public DbSet<ClientPostLogoutRedirectUri> ClientPostLogoutRedirectUris { get; set; }
+        //public DbSet<ClientCorsOrigin> ClientCorsOrigins { get; set; }
 
-        public DbSet<ClientCorsOrigin> ClientCorsOrigins { get; set; }
+        //public DbSet<ClientIdPRestriction> ClientIdPRestrictions { get; set; }
 
-        public DbSet<ClientIdPRestriction> ClientIdPRestrictions { get; set; }
+        //public DbSet<ClientRedirectUri> ClientRedirectUris { get; set; }
 
-        public DbSet<ClientRedirectUri> ClientRedirectUris { get; set; }
+        //public DbSet<ClientClaim> ClientClaims { get; set; }
 
-        public DbSet<ClientClaim> ClientClaims { get; set; }
-
-        public DbSet<ClientProperty> ClientProperties { get; set; }
-
+        //public DbSet<ClientProperty> ClientProperties { get; set; }
         private void ConfigureIdentityContext(ModelBuilder builder)
         {
 
@@ -104,7 +97,7 @@ namespace Microex.All.IdentityServer
             var encryptPersonalData = storeOptions?.ProtectPersonalData ?? false;
             ValueConverter<string,string> converter = null;
 
-            builder.Entity<User>(b =>
+            builder.Entity<TUser>(b =>
                 {
                     b.HasKey(u => u.Id);
                     b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex").IsUnique();
@@ -121,7 +114,7 @@ namespace Microex.All.IdentityServer
                     {
                         var protector = this.GetService<IPersonalDataProtector>();
                         converter = new ValueConverter<string,string>(s => protector.Protect(s), s => protector.Unprotect(s), default);
-                        var personalDataProps = typeof(User).GetProperties().Where(
+                        var personalDataProps = typeof(TUser).GetProperties().Where(
                                     prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
                         foreach (var p in personalDataProps)
                         {
@@ -141,6 +134,7 @@ namespace Microex.All.IdentityServer
             builder.Entity<UserClaim>(b =>
             {
                 b.HasKey(uc => uc.Id);
+                
                 b.ToTable("UserClaims");
             });
 
@@ -183,7 +177,7 @@ namespace Microex.All.IdentityServer
 
                 b.ToTable("UserTokens");
             });
-            builder.Entity<User>(b =>
+            builder.Entity<TUser>(b =>
             {
                 b.HasMany<UserRole>().WithOne().HasForeignKey(ur => ur.UserId).IsRequired();
             });

@@ -10,6 +10,7 @@ using Microex.All.Common;
 using Microex.All.IdentityServer;
 using Microex.All.IdentityServer.Identity;
 using Microex.All.IdentityServer.PredefinedConfigurations;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microex.All.EntityFramework
@@ -31,32 +33,27 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="host"></param>
         /// <returns></returns>
-        public static IWebHost EnsurePredefinedIdentityServerConfigs<TContext>(this IWebHost host, Action<TContext> seedAction = null) where TContext : IdentityServerDbContext
+        public static void EnsurePredefinedIdentityServerConfigs<TContext, TUser>(this IApplicationBuilder host, Action<TContext> seedAction = null) where TContext : IdentityServerDbContext<TUser> where TUser : GeexUser, new()
         {
-            using (var scope = host.Services.CreateScope())
-            {//只在本区间内有效
-                var services = scope.ServiceProvider;
-                var logger = services.GetRequiredService<ILogger<TContext>>();
-                try
-                {
-                    
-                    var context = services.GetRequiredService<TContext>();
-                    context.Database.Migrate();
-                    context.EnsureIdentityServerSeedData(new[] { ClientPredefinedConfiguration.AdminManageClient },
-                        ResourcePredefinedConfiguration.IdentityResources,
-                        new ApiResource[] {},
-                        IdentityPredefinedConfiguration.UserRoles);
-                    seedAction?.Invoke(context);
-                    logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
-                }
-                catch (Exception e)
-                {
-                    logger.LogCritical(e,"数据库自动migration失败");
-                    throw;
-                }
-                
+            var services = host.ApplicationServices;
+            var logger = services.GetRequiredService<ILogger<TContext>>();
+            try
+            {
+
+                var context = services.GetRequiredService<TContext>();
+                context.Database.Migrate();
+                context.EnsureIdentityServerSeedData<TUser>(new[] { ClientPredefinedConfiguration.AdminManageClient },
+                    ResourcePredefinedConfiguration.IdentityResources,
+                    new ApiResource[] { },
+                    IdentityPredefinedConfiguration<TUser>.UserRoles);
+                seedAction?.Invoke(context);
+                logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
             }
-            return host;
+            catch (Exception e)
+            {
+                logger.LogCritical(e, "数据库自动migration失败");
+                throw;
+            }
         }
 
         /// <summary>
@@ -65,7 +62,7 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="host"></param>
         /// <returns></returns>
-        public static IWebHost EnsureMigrations<TContext>(this IWebHost host,Action<TContext> seedAction = null) where TContext : DbContext
+        public static IWebHost EnsureMigrations<TContext>(this IWebHost host, Action<TContext> seedAction = null) where TContext : DbContext
         {
             using (var scope = host.Services.CreateScope())
             {//只在本区间内有效
@@ -114,7 +111,7 @@ namespace Microex.All.EntityFramework
             return query.Skip((page - 1) * pageSize).Take(pageSize);
         }
 
-        public static async Task<PagedList<TEntity>> ToPagedListAsync<TEntity>(this IQueryable<TEntity> rawData,Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10,bool orderByDescending = true) where TEntity: class, IEntity
+        public static async Task<PagedList<TEntity>> ToPagedListAsync<TEntity>(this IQueryable<TEntity> rawData, Expression<Func<TEntity, bool>> predicate = null, Expression<Func<TEntity, IComparable>> orderBy = null, int page = 1, int pageSize = 10, bool orderByDescending = true) where TEntity : class, IEntity
         {
             var pagedList = new PagedList<TEntity>();
             IQueryable<TEntity> query = rawData;
@@ -127,7 +124,7 @@ namespace Microex.All.EntityFramework
 
             if (orderBy != null)
             {
-                query = query.PageBy(orderBy, page, pageSize,orderByDescending);
+                query = query.PageBy(orderBy, page, pageSize, orderByDescending);
 
             }
             List<TEntity> data = await query
