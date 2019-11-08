@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MoreLinq;
+using Entities = IdentityServer4.EntityFramework.Entities;
 
 namespace Microex.All.IdentityServer
 {
@@ -22,28 +23,28 @@ namespace Microex.All.IdentityServer
             IEnumerable<ApiResource> apiResources,
             IEnumerable<(TUser user, Role role)> identityConfigs) where TUser : GeexUser 
         {
-            if (!(context as IConfigurationDbContext).Clients.Any())
+            if (!context.Set<Entities.Client>().Any())
             {
                 foreach (var client in clients)
                 {
-                    (context as IConfigurationDbContext).Clients.Add(client.ToEntity());
+                    context.Set<Entities.Client>().Add(client.ToEntity());
                 }
             }
 
-            if (!(context as IConfigurationDbContext).IdentityResources.Any())
+            if (!context.Set<Entities.IdentityResource>().Any())
             {
 
                 foreach (var resource in identityResources)
                 {
-                    (context as IConfigurationDbContext).IdentityResources.Add(resource.ToEntity());
+                    context.Set<Entities.IdentityResource>().Add(resource.ToEntity());
                 }
             }
 
-            if (!(context as IConfigurationDbContext).ApiResources.Any())
+            if (!context.Set<Entities.ApiResource>().Any())
             {
                 foreach (var resource in apiResources)
                 {
-                    (context as IConfigurationDbContext).ApiResources.Add(resource.ToEntity());
+                    context.Set<Entities.ApiResource>().Add(resource.ToEntity());
                 }
             }
 
@@ -62,7 +63,7 @@ namespace Microex.All.IdentityServer
                     context.SaveChanges();
                     role.Id = roleEntry.Entity.Id;
                 }
-                context.UserRoles.AddRange(identityConfigs.Select(x => new UserRole() { RoleId = x.role.Id, UserId = x.user.Id }));
+                context.Set<UserRole>().AddRange(identityConfigs.Select(x => new UserRole() { RoleId = x.role.Id, UserId = x.user.Id }));
                 //foreach (var pair in identityConfigs)
                 //{
 

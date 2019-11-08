@@ -5,12 +5,17 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Microex.All.Common
 {
     public static class Extensions
     {
+        public static bool IsValidEmail(this string str)
+        {
+            return new Regex(@"\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}").IsMatch(str);
+        }
         public static PagedList<TTarget> Cast<T, TTarget>(this PagedList<T> @this, Func<T, TTarget> changeExpression) where TTarget : class where T : class
         {
             var result = new PagedList<TTarget>()

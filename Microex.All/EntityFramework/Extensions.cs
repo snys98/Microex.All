@@ -41,6 +41,7 @@ namespace Microex.All.EntityFramework
             {
 
                 var context = services.GetRequiredService<TContext>();
+                var migrations = context.Database.GetMigrations();
                 context.Database.Migrate();
                 context.EnsureIdentityServerSeedData<TUser>(new[] { ClientPredefinedConfiguration.AdminManageClient },
                     ResourcePredefinedConfiguration.IdentityResources,
