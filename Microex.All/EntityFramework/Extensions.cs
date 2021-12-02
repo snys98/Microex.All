@@ -5,11 +5,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+
 using IdentityServer4.Models;
+
 using Microex.All.Common;
 using Microex.All.IdentityServer;
 using Microex.All.IdentityServer.Identity;
 using Microex.All.IdentityServer.PredefinedConfigurations;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -33,22 +36,31 @@ namespace Microex.All.EntityFramework
         /// <typeparam name="TContext"></typeparam>
         /// <param name="host"></param>
         /// <returns></returns>
-        public static void EnsurePredefinedIdentityServerConfigs<TContext, TUser>(this IApplicationBuilder host, Action<TContext> seedAction = null) where TContext : IdentityServerDbContext<TUser> where TUser : GeexUser, new()
+        public static void EnsurePredefinedIdentityServerConfigs<TContext, TUser>(this IApplicationBuilder host, Action<TContext> seedAction = null) where TContext : IdentityServerDbContext<TUser> where TUser : User, new()
         {
             var services = host.ApplicationServices;
             var logger = services.GetRequiredService<ILogger<TContext>>();
             try
             {
-
-                var context = services.GetRequiredService<TContext>();
-                var migrations = context.Database.GetMigrations();
-                context.Database.Migrate();
-                context.EnsureIdentityServerSeedData<TUser>(new[] { ClientPredefinedConfiguration.AdminManageClient },
-                    ResourcePredefinedConfiguration.IdentityResources,
-                    new ApiResource[] { },
-                    IdentityPredefinedConfiguration<TUser>.UserRoles);
-                seedAction?.Invoke(context);
-                logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
+                var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
+                using var scope = scopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<TContext>();
+                // rest of your code
+                //只在本区间内有效
+                if (context.Database.EnsureCreated())
+                {
+                    var migrations = context.Database.GetMigrations();
+                    context.Database.Migrate();
+                    context.EnsureIdentityServerSeedData<TUser>(
+                        new[] { ClientPredefinedConfiguration.AdminManageClient },
+                        ResourcePredefinedConfiguration.IdentityResources,
+                        new ApiResource[] { },
+                        IdentityPredefinedConfiguration<TUser>.UserRoles);
+                    seedAction?.Invoke(context);
+                    context.SaveChanges();
+                    logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
+                }
+                throw new Exception("自动创建数据库失败.");
             }
             catch (Exception e)
             {

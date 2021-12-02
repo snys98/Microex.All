@@ -3,23 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Microex.All.EntityFramework
 {
     public class DbSetRegistrationSource<TContext> : IRegistrationSource where TContext : DbContext
     {
-        public bool IsAdapterForIndividualComponents
-        {
-            get { return true; }
-        }
-
-        public IEnumerable<IComponentRegistration> RegistrationsFor(
-            Service service,
-            Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
+        /// <summary>
+        /// Retrieve registrations for an unregistered service, to be used
+        /// by the container.
+        /// </summary>
+        /// <param name="service">The service that was requested.</param>
+        /// <param name="registrationAccessor">A function that will return existing registrations for a service.</param>
+        /// <returns>Registrations providing the service.</returns>
+        /// <remarks>
+        /// If the source is queried for service s, and it returns a component that implements both s and s', then it
+        /// will not be queried again for either s or s'. This means that if the source can return other implementations
+        /// of s', it should return these, plus the transitive closure of other components implementing their
+        /// additional services, along with the implementation of s. It is not an error to return components
+        /// that do not implement <paramref name="service" />.
+        /// </remarks>
+        public IEnumerable<IComponentRegistration> RegistrationsFor(Service service, Func<Service, IEnumerable<ServiceRegistration>> registrationAccessor)
         {
             var swt = service as IServiceWithType;
             if (swt == null || !swt.ServiceType.IsGenericType)
@@ -42,6 +51,11 @@ namespace Microex.All.EntityFramework
             })
                     .As(service)
                     .CreateRegistration();
+        }
+
+        public bool IsAdapterForIndividualComponents
+        {
+            get { return true; }
         }
     }
 }

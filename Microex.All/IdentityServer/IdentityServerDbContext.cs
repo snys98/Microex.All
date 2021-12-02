@@ -21,7 +21,7 @@ using UserClaim = Microex.All.IdentityServer.Identity.UserClaim;
 namespace Microex.All.IdentityServer
 {
     public abstract class IdentityServerDbContext<TUser> : IdentityDbContext<TUser, Role, string, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>,
-        IConfigurationDbContext, IPersistedGrantDbContext where TUser : GeexUser
+        IConfigurationDbContext, IPersistedGrantDbContext where TUser : User
     {
         protected readonly ConfigurationStoreOptions _configurationStoreOptions = new ConfigurationStoreOptions();
         protected readonly OperationalStoreOptions _operationalStoreOptions = new OperationalStoreOptions();
@@ -59,37 +59,20 @@ namespace Microex.All.IdentityServer
             return base.SaveChangesAsync();
         }
 
-        DbSet<Client> IConfigurationDbContext.Clients { get; set; }
-        DbSet<IdentityResource> IConfigurationDbContext.IdentityResources { get; set; }
-        DbSet<ApiResource> IConfigurationDbContext.ApiResources { get; set; }
-        DbSet<PersistedGrant> IPersistedGrantDbContext.PersistedGrants { get; set; }
-        DbSet<DeviceFlowCodes> IPersistedGrantDbContext.DeviceFlowCodes { get; set; }
-        //public DbSet<ApiSecret> ApiSecrets { get; set; }
+        public DbSet<Client> Clients { get; set; }
 
-        //public DbSet<ApiScope> ApiScopes { get; set; }
+        /// <summary>Gets or sets the clients' CORS origins.</summary>
+        /// <value>The clients CORS origins.</value>
+        public DbSet<ClientCorsOrigin> ClientCorsOrigins { get; set; }
+        public DbSet<IdentityResource> IdentityResources { get; set; }
+        public DbSet<ApiResource> ApiResources { get; set; }
 
-        //public DbSet<ApiScopeClaim> ApiScopeClaims { get; set; }
+        /// <summary>Gets or sets the scopes.</summary>
+        /// <value>The identity resources.</value>
+        public DbSet<ApiScope> ApiScopes { get; set; }
+        public DbSet<PersistedGrant> PersistedGrants { get; set; }
+        public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
 
-        //public DbSet<IdentityClaim> IdentityClaims { get; set; }
-
-        //public DbSet<ApiResourceClaim> ApiResourceClaims { get; set; }
-        //public DbSet<ClientGrantType> ClientGrantTypes { get; set; }
-
-        //public DbSet<ClientScope> ClientScopes { get; set; }
-
-        //public DbSet<ClientSecret> ClientSecrets { get; set; }
-
-        //public DbSet<ClientPostLogoutRedirectUri> ClientPostLogoutRedirectUris { get; set; }
-
-        //public DbSet<ClientCorsOrigin> ClientCorsOrigins { get; set; }
-
-        //public DbSet<ClientIdPRestriction> ClientIdPRestrictions { get; set; }
-
-        //public DbSet<ClientRedirectUri> ClientRedirectUris { get; set; }
-
-        //public DbSet<ClientClaim> ClientClaims { get; set; }
-
-        //public DbSet<ClientProperty> ClientProperties { get; set; }
         private void ConfigureIdentityContext(ModelBuilder builder)
         {
 

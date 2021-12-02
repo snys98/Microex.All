@@ -16,7 +16,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microex.All.IdentityServer
 {
-    public class MicroexUserManager<TUser> : UserManager<TUser> where TUser : GeexUser
+    public class MicroexUserManager<TUser> : UserManager<TUser> where TUser : User
     {
         private IServiceProvider _services;
 
@@ -40,12 +40,12 @@ namespace Microex.All.IdentityServer
         {
             this._services = services;
         }
-        public async Task<GeexUser> FindByPhoneNumberAsync(string phone)
+        public async Task<User> FindByPhoneNumberAsync(string phone)
         {
             this.ThrowIfDisposed();
             if (phone == null)
                 throw new ArgumentNullException(nameof(phone));
-            GeexUser byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<GeexUser, bool>>)(u => u.PhoneNumber == phone), CancellationToken.None);
+            User byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<User, bool>>)(u => u.PhoneNumber == phone), CancellationToken.None);
             if ((object)byEmailAsync == null && this.Options.Stores.ProtectPersonalData)
             {
                 ILookupProtectorKeyRing service = this._services.GetService<ILookupProtectorKeyRing>();
@@ -55,7 +55,7 @@ namespace Microex.All.IdentityServer
                     foreach (string allKeyId in service.GetAllKeyIds())
                     {
                         
-                        byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<GeexUser, bool>>)(u => u.PhoneNumber == protector.Protect(allKeyId, phone)), CancellationToken.None);
+                        byEmailAsync = await (this.Users).FirstOrDefaultAsync((Expression<Func<User, bool>>)(u => u.PhoneNumber == protector.Protect(allKeyId, phone)), CancellationToken.None);
                         if ((object)byEmailAsync != null)
                             return byEmailAsync;
                     }
@@ -65,9 +65,9 @@ namespace Microex.All.IdentityServer
             return byEmailAsync;
         }
 
-        private IUserPhoneNumberStore<GeexUser> GetPhoneNumberStore()
+        private IUserPhoneNumberStore<User> GetPhoneNumberStore()
         {
-            IUserPhoneNumberStore<GeexUser> store = this.Store as IUserPhoneNumberStore<GeexUser>;
+            IUserPhoneNumberStore<User> store = this.Store as IUserPhoneNumberStore<User>;
             if (store != null)
                 return store;
             throw new NotSupportedException("StoreNotIUserPhoneNumberStore");

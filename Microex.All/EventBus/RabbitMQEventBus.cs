@@ -165,7 +165,7 @@ namespace Microex.All.EventBus
             consumer.Received += async (model, ea) =>
             {
                 var eventName = ea.RoutingKey;
-                var message = Encoding.UTF8.GetString(ea.Body);
+                var message = Encoding.UTF8.GetString(ea.Body.ToArray());
 
                 await ProcessEvent(eventName, message);
             };

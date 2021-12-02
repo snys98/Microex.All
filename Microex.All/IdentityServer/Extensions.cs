@@ -21,7 +21,7 @@ namespace Microex.All.IdentityServer
         public static void EnsureIdentityServerSeedData<TUser>(this IdentityServerDbContext<TUser> context,
             IEnumerable<Client> clients, IEnumerable<IdentityResource> identityResources,
             IEnumerable<ApiResource> apiResources,
-            IEnumerable<(TUser user, Role role)> identityConfigs) where TUser : GeexUser 
+            IEnumerable<(TUser user, Role role)> identityConfigs) where TUser : User 
         {
             if (!context.Set<Entities.Client>().Any())
             {

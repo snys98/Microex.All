@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Consul;
-using Microex.All.ElasticSearch.Zero.Logging.Elasticsearch;
 using Microex.All.MicroService;
 using Microex.All.RestHttpClient;
 using Microsoft.AspNetCore.Builder;
@@ -56,7 +55,7 @@ namespace Microex.All.Extensions
             });
             return builder;
         }
-        
+
         /// <summary>
         /// 添加更便于使用的resthttpclient
         /// </summary>
@@ -86,7 +85,7 @@ namespace Microex.All.Extensions
 
         public static IApplicationBuilder UseMicroService(this IApplicationBuilder appBuilder,string iisExternalPort = "80")
         {
-            
+
             appBuilder.UseConsulServiceDiscoveryAndHealthCheck(
                 appBuilder.ApplicationServices.GetService<ServiceDiscoveryAndHealthCheckOptions>(),
                 appBuilder.ApplicationServices.GetService<IConsulClient>(),
@@ -96,24 +95,5 @@ namespace Microex.All.Extensions
                 iisExternalPort);
             return appBuilder;
         }
-
-        /// <summary>
-        /// Configures <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> to use Application Insights services.
-        /// </summary>
-        /// <param name="webHostBuilder">The <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> instance.</param>
-        /// <returns>The <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" />.</returns>
-        public static IWebHostBuilder ConfigEsLogging(this IWebHostBuilder webHostBuilder)
-        {
-            webHostBuilder.ConfigureLogging((context, builder) =>
-            {
-                if (!context.HostingEnvironment.IsDevelopment())
-                {
-                    builder.AddElasticsearch(); 
-                }
-            });
-
-            return webHostBuilder;
-        }
-
     }
 }

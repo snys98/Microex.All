@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Microex.All.IdentityServer.Identity
 {
-    public class GeexUser : IdentityUser
+    public class User : IdentityUser
     {
-        public GeexUser()
+        public User()
         {
             Id = SequentialGuid.SequentialGuidGenerator.Instance.NewGuid(DateTime.Now).ToString();
         }

@@ -27,9 +27,9 @@ namespace Microex.All.IdentityServer.PredefinedConfigurations
             Name = nameof(AdminManageResource),
             UserClaims = new List<string>(){ JwtClaimTypes.Subject,JwtClaimTypes.Role },
             DisplayName = nameof(AdminManageResource),
-            Scopes = new List<Scope>()
+            Scopes = new List<string>()
             {
-                new Scope(nameof(AdminManageResource))
+                nameof(AdminManageResource)
             },
             ApiSecrets =
             {
