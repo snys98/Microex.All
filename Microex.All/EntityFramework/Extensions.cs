@@ -45,21 +45,16 @@ namespace Microex.All.EntityFramework
                 var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
                 using var scope = scopeFactory.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<TContext>();
-                // rest of your code
                 //只在本区间内有效
-                if (context.Database.EnsureCreated())
-                {
-                    var migrations = context.Database.GetMigrations();
-                    context.Database.Migrate();
-                    context.EnsureIdentityServerSeedData<TUser>(
-                        new[] { ClientPredefinedConfiguration.AdminManageClient },
-                        ResourcePredefinedConfiguration.IdentityResources,
-                        new ApiResource[] { },
-                        IdentityPredefinedConfiguration<TUser>.UserRoles);
-                    seedAction?.Invoke(context);
-                    context.SaveChanges();
-                    logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
-                }
+                context.Database.Migrate();
+                context.EnsureIdentityServerSeedData<TUser>(
+                    new[] { ClientPredefinedConfiguration.AdminManageClient },
+                    ResourcePredefinedConfiguration.IdentityResources,
+                    new ApiResource[] { },
+                    IdentityPredefinedConfiguration<TUser>.UserRoles);
+                seedAction?.Invoke(context);
+                context.SaveChanges();
+                logger.LogInformation($"AutoMigrateDbContext {typeof(TContext).Name} 执行成功");
                 throw new Exception("自动创建数据库失败.");
             }
             catch (Exception e)
